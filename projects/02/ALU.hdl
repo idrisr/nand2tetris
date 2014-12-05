@@ -42,5 +42,32 @@ CHIP ALU {
         ng; // 1 if (out < 0),  0 otherwise
 
     PARTS:
-   // Put you code here:
+    Not16(in=x, out=xnot);
+    Not16(in=y, out=ynot);
+
+    // do the 4 way mux to get all combos of zx & nx
+    //                               00      01       10      11
+    Mux4Way16(sel[1]=zx, sel[0]=nx, a=x, b=xnot, c=false, d=true, out=xout);
+
+    // do the 4 way mux to get all combos of zx & nx
+    //                               00      01       10      11
+    Mux4Way16(sel[1]=zy, sel[0]=ny, a=y, b=ynot, c=false, d=true, out=yout);
+
+    // handle f. do x+y and x&y and mux based on f
+    Add16(a=xout, b=yout, out=xplusy);
+    And16(a=xout, b=yout, out=xandy);
+    Mux16(a=xandy, b=xplusy, sel=f, out=xyout);
+
+    // handle no. take the not, then mux on no
+    Not16(in=xyout, out=notxyout);
+    Mux16(a=xyout, b=notxyout, sel=no, out=preout);
+
+    // inelegant way to handle ng. If first digit is 1, it's negative
+    And16(a=preout, b=true, out[15]=ng);
+
+    // Test all 16 bits of out for 0
+    // or all 16 bits
+    Or16Way(in=preout, out=nzr);
+    Not(in=nzr, out=zr);
+    And16(a=preout, b=preout, out=out);
 }
