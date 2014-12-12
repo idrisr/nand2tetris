@@ -1,0 +1,82 @@
+/**
+ * The Hack CPU (Central Processing unit), consisting of an ALU,
+ * two registers named A and D, and a program counter named PC.
+ * The CPU is designed to fetch and execute instructions written in 
+ * the Hack machine language. In particular, functions as follows:
+ * Executes the inputted instruction according to the Hack machine 
+ * language specification. The D and A in the language specification
+ * refer to CPU-resident registers, while M refers to the external
+ * memory location addressed by A, i.e. to Memory[A]. The inM input 
+ * holds the value of this location. If the current instruction needs 
+ * to write a value to M, the value is placed in outM, the address 
+ * of the target location is placed in the addressM output, and the 
+ * writeM control bit is asserted. (When writeM==0, any value may 
+ * appear in outM). The outM and writeM outputs are combinational: 
+ * they are affected instantaneously by the execution of the current 
+ * instruction. The addressM and pc outputs are clocked: although they 
+ * are affected by the execution of the current instruction, they commit 
+ * to their new values only in the next time step. If reset==1 then the 
+ * CPU jumps to address 0 (i.e. pc is set to 0 in next time step) rather 
+ * than to the address resulting from executing the current instruction. 
+ */
+
+    PARTS:
+    // CHIP ARegister {
+        //     IN  in[16], load;
+        //     OUT out[16];
+
+    // CHIP DRegister {
+        //     IN  in[16], load;
+        //     OUT out[16];
+
+    // CHIP ALU {
+        // IN  // 16-bit inputs:
+        //    x[16], y[16],
+        //    // Control bits:
+        //    zx, // Zero the x input
+        //    nx, // Negate the x input
+        //    zy, // Zero the y input
+        //    ny, // Negate the y input
+        //    f,  // Function code: 1 for add, 0 for and
+        //    no; // Negate the out output
+
+        // OUT // 16-bit output
+        //    out[16],
+        //    // ALU output flags
+        //    zr, // 1 if out=0, 0 otherwise
+        //    ng; // 1 if out<0, 0 otherwise
+
+    // CHIP PC {
+        //    IN  in[16], load, inc, reset;
+        //    OUT out[16];
+
+## instruction decoding
+    A or C
+
+    16 bits:
+    i xx a cccccc ddd jjj
+    f ed c ba9876 543 210
+
+    i: instruction type
+        0: A-instruction
+            x-j : 15 bit constant
+        1: C-instruction
+            a+c : comp part
+            d   : dest part
+            j   : jump part
+
+## instruction execution
+    The various fields of the instruction (i-, a-, c-, d-, and j-bits) are routed
+    simultaneously to various parts of the architecture, where they cause different
+    chips to do what they are supposed to do in order to execute either the
+    A-instruction or the C-instruction, as mandated by the machine language
+    specification. 
+
+    a-bit  : whether the ALU will operate on the A register input or on the Memory input
+    c-bits : which function the ALU will compute
+    d-bits : enable various locations to accept the ALU result.
+
+## Next Instruction Fetching
+
+
+
