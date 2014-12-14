@@ -28,11 +28,12 @@ CHIP CPU {
     // 3 -- done
     // load if A instruction, or d-A bit set
     Or(a=instruction[15], b=instruction[5], out=aload);
-    ARegister(in=outm2, load=aload, out=outA);
+    ARegister(in=outm2, load=aload, out=outA, out[0..14]=addressM);
 
     // 4 -- done
-    // load = 2nd d bit
-    DRegister(in=aluout, load=instruction[4], out=outD);
+    // load = 2nd d bit and C-instruction
+    And(a=instruction[15], b=instruction[4], out=dload);
+    DRegister(in=aluout, load=dload, out=outD);
 
     // 5 -- done
     // A or M based on a bit

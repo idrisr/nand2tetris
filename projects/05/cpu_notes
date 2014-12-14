@@ -66,6 +66,7 @@ The compute instruction has the format 111accccccdddjjj.
     A or C
 
     16 bits:
+    1 11 0 110000 010 000
     i xx a cccccc ddd jjj
     f ed c ba9876 543 210
                       123
@@ -113,7 +114,7 @@ Execute:
     proposed CPU implementation feeds the CPU’s reset input directly into the reset
     pin of the PC chip.
 
-## Destination Spec
+## Destination Spec ddd
     d1   d2   d3   mnemonic   destination
     -    -    -    --------   -----------
     0    0    0    null       The value is not stored anywhere
@@ -125,7 +126,7 @@ Execute:
     1    1    0    AD         A register and D register
     1    1    1    AMD        A register, Memory[A], and D register
 
-## Jump Spec
+## Jump Spec jjj
     j1      j2      j3      mnemonic   effect
     -----   -----   -----   --------   ------
     out<0   out=0   out>0
