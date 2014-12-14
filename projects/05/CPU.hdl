@@ -18,33 +18,60 @@ CHIP CPU {
     PARTS:
     // numbers based on markings in cpu_diagram.png
 
-    // 1
-    // decode A or C instruction
-    // wheter the ALU will operate on A register or memory input
-    DMux(in=true, sel=instruction[15], 
-        a=a_instr, b=c_instr);
-        there's only one out?
+    // writeM. based on 3rd d bit and whether it's a C-insruction
+    And(a=instruction[3], b=instruction[15], out=writeM);
 
-    // 2
-    Mux16();
+    // 2 -- done
+    // Inputs: 1 and ALU out
+    Mux16(a=instruction, b=aluout, sel=instruction[15], out=outm2);
 
-    // 3
-    ARegister(in=something, load=something, 
-        out=outA);
+    // 3 -- done
+    // load if A instruction, or d-A bit set
+    Or(a=instruction[15], b=instruction[5], out=aload);
+    ARegister(in=outm2, load=aload, out=outA);
 
-    // 4
-    DRegister(in=alu_out, load=something, 
-        out=outD);
+    // 4 -- done
+    // load = 2nd d bit
+    DRegister(in=aluout, load=instruction[4], out=outD);
 
-    // 5
+    // 5 -- done
     // A or M based on a bit
-    Mux16(a=inM, b=outA, sel=something, 
-        out=outM5);
+    // wheter the ALU will operate on A register or memory input
+    // based on a-bit
+    Mux16(a=inM, b=outA, sel=instruction[12], out=outM5);
 
-    // 6
-    ALU(x=dout, y=outM5, zx, nx, zy, ny, f, no, 
-        out, zr, ng);
+    // 6 
+    // accccc bits set to zx thru no
+    ALU(x=outD, y=outM5, 
+        zx=instruction[12],
+        nx=instruction[11],
+        zy=instruction[10],
+        ny=instruction[9],
+        f =instruction[8],
+        no=instruction[7],
+        out=aluout, out=outM, zr=zr, ng=ng);
 
-    // 7
-    PC(in= , load= , inc=, reset=reset, 
-        out=pc);
+    // Whether to jump
+    // based on ng, zr & ps i know which jbit interests me
+    // so get the right j bit
+    Not(in=zr, out=nzr);
+    Not(in=ng, out=nng);
+    And(a=nzr, b=nng, out=ps);
+
+    And(a=ng, b=instruction[2], out=ang);
+    And(a=zr, b=instruction[1], out=azr);
+    And(a=ps, b=instruction[0], out=aps);
+
+    // if ng, j1, and(j1, ng)
+    // if zr, j2  and(j2, zr)
+    // if ps, j3  and(j3, ps)
+    Mux4Way(a=aps, b=azr, c=ang, d=false, sel[1]=ng, sel[0]=zr, out=jump);
+
+    // 7 -- done
+    // If we have a jump, the PC is loaded with A's output
+    // Otherwise increment by 1
+    // I believe inc is always true, because you always want it to at least increment
+    // load is whether the jump condition is satisfied
+    // I believe the jbool is a function of the ALU output status bits zr and ng
+    PC(in=outA , load=jump, inc=true, reset=reset, out[0..14]=pc);
+}

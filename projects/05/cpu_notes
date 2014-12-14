@@ -50,23 +50,46 @@
         //    IN  in[16], load, inc, reset;
         //    OUT out[16];
 
+The Hack machine language is based on two 16-bit command types. 
+The address instruction has the format 0vvvvvvvvvvvvvvv, 
+each v being 0 or 1. 
+This instruction causes the computer to load the 15-bit constant vvv...v into the
+A-register. 
+
+The compute instruction has the format 111accccccdddjjj. 
+    a- and c-bits instruct the ALU which function to compute, 
+    d-bits instruct where to store the ALU output, 
+    j-bits specify an optional jump condition
+
+
 ## instruction decoding
     A or C
 
     16 bits:
     i xx a cccccc ddd jjj
     f ed c ba9876 543 210
+                      123
+                      -0+
 
     i: instruction type
         0: A-instruction
             x-j : 15 bit constant
         1: C-instruction
-            a+c : comp part
+            a+c : comp part // the 6 bit input for ALU
             d   : dest part
             j   : jump part
 
+Execute:
+    Various bit parts of the current instruction are simultaneously fed to various
+    chips in the computer. If it’s an address instruction (most significant bit =
+    0), the A-register is set to the 15-bit constant embedded in the instruction.
+
+    If it’s a compute instruction (MSB = 1), its underlying a-, c-, d- and j-bits
+    are treated as control bits that cause the ALU and the registers to execute the
+    instruction.
+
 ## instruction execution
-    The various fields of the instruction (i-, a-, c-, d-, and j-bits) are routed
+    The various fields of the instruction (i, a, c, d, and jbits) are routed
     simultaneously to various parts of the architecture, where they cause different
     chips to do what they are supposed to do in order to execute either the
     A-instruction or the C-instruction, as mandated by the machine language
@@ -78,5 +101,39 @@
 
 ## Next Instruction Fetching
 
+## Jump
+    The only remaining question is when to enable the PC to accept this value
+    (rather than continuing its steadfast counting), namely, when does a jump need
+    to occur. This is a function of two signals: (a) the j-bits of the current
+    instruction, specifying on which condition we are supposed to jump, and (b) the
+    ALU output status bits, indicating whether the condition is satisfied. If we
+    have a jump, the PC should be loaded with A’s output. Otherwise, the PC should
+    increment by 1. Additionally, if we want the computer to restart the program’s
+    execution, all we have to do is reset the program counter to 0. That’s why the
+    proposed CPU implementation feeds the CPU’s reset input directly into the reset
+    pin of the PC chip.
 
+## Destination Spec
+    d1   d2   d3   mnemonic   destination
+    -    -    -    --------   -----------
+    0    0    0    null       The value is not stored anywhere
+    0    0    1    M          Memory[A], (memory register addressed by A)
+    0    1    0    D          D register
+    0    1    1    MD         Memory[A] and D register
+    1    0    0    A          A register
+    1    0    1    AM         A register and Memory[A]
+    1    1    0    AD         A register and D register
+    1    1    1    AMD        A register, Memory[A], and D register
 
+## Jump Spec
+    j1      j2      j3      mnemonic   effect
+    -----   -----   -----   --------   ------
+    out<0   out=0   out>0
+    0       0       0       null       No Jump
+    0       0       1       JGT        if out>0 jump
+    0       1       0       JEQ        if out=0 jump
+    0       1       1       JGE        if out>=0 jump 
+    1       0       0       JLT        if out<0 jump
+    1       0       1       JNE        if out!=0 jump
+    1       1       0       JLE        if out<=0 jump 
+    1       1       1       JMP        Jump
