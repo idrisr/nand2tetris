@@ -39,7 +39,7 @@ CHIP CPU {
     // A or M based on a bit
     // wheter the ALU will operate on A register or memory input
     // based on a-bit
-    Mux16(a=inM, b=outA, sel=instruction[12], out=outM5);
+    Mux16(b=inM, a=outA, sel=instruction[12], out=outM5);
 
     // 6 
     // ba9876

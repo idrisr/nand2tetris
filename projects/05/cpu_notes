@@ -66,7 +66,8 @@ The compute instruction has the format 111accccccdddjjj.
     A or C
 
     16 bits:
-    1 11 0 110000 010 000
+
+    1 11 0 110000 010 000, // D=A
     i xx a cccccc ddd jjj
     f ed c ba9876 543 210
                       123
@@ -115,18 +116,6 @@ Execute:
     proposed CPU implementation feeds the CPU’s reset input directly into the reset
     pin of the PC chip.
 
-## Destination Spec ddd
-    d1   d2   d3   mnemonic   destination
-    -    -    -    --------   -----------
-    0    0    0    null       The value is not stored anywhere
-    0    0    1    M          Memory[A], (memory register addressed by A)
-    0    1    0    D          D register
-    0    1    1    MD         Memory[A] and D register
-    1    0    0    A          A register
-    1    0    1    AM         A register and Memory[A]
-    1    1    0    AD         A register and D register
-    1    1    1    AMD        A register, Memory[A], and D register
-
 ## Jump Spec jjj
     j1      j2      j3      mnemonic   effect
     -----   -----   -----   --------   ------
@@ -139,3 +128,16 @@ Execute:
     1       0       1       JNE        if out!=0 jump
     1       1       0       JLE        if out<=0 jump 
     1       1       1       JMP        Jump
+
+
+## Destination Spec ddd
+    d1   d2   d3   mnemonic   destination
+    -    -    -    --------   -----------
+    0    0    0    null       The value is not stored anywhere
+    0    0    1    M          Memory[A], (memory register addressed by A)
+    0    1    0    D          D register
+    0    1    1    MD         Memory[A] and D register
+    1    0    0    A          A register
+    1    0    1    AM         A register and Memory[A]
+    1    1    0    AD         A register and D register
+    1    1    1    AMD        A register, Memory[A], and D register
