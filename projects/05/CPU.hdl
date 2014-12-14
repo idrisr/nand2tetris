@@ -21,35 +21,46 @@ CHIP CPU {
     // writeM. based on 3rd d bit and whether it's a C-insruction
     And(a=instruction[3], b=instruction[15], out=writeM);
 
-    // 2 -- done
+    // 2
     // Inputs: 1 and ALU out
     Mux16(a=instruction, b=aluout, sel=instruction[15], out=outm2);
 
-    // 3 -- done
+    // 3
     // load if A instruction, or d-A bit set
-    Or(a=instruction[15], b=instruction[5], out=aload);
-    ARegister(in=outm2, load=aload, out=outA, out[0..14]=addressM);
+    Not(in=instruction[15], out=aload); // If A instruction, load the value
+    ARegister(in=instruction, load=aload, out=outA, out[0..14]=addressM);
 
-    // 4 -- done
+    // 4
     // load = 2nd d bit and C-instruction
     And(a=instruction[15], b=instruction[4], out=dload);
     DRegister(in=aluout, load=dload, out=outD);
 
-    // 5 -- done
+    // 5
     // A or M based on a bit
     // wheter the ALU will operate on A register or memory input
     // based on a-bit
     Mux16(a=inM, b=outA, sel=instruction[12], out=outM5);
 
     // 6 
-    // accccc bits set to zx thru no
+    // ba9876
+    // cccccc bits set to zx thru no
+    // If A instruction (instruction[15]=0), have ALU output x
+    //     zy&ny=1, others=0
+
+    Mux(a=false , b=instruction[11] , sel=instruction[15] , out=czx);
+    Mux(a=false , b=instruction[10] , sel=instruction[15] , out=cnx);
+    Mux(a=true  , b=instruction[9]  , sel=instruction[15] , out=czy);
+    Mux(a=true  , b=instruction[8]  , sel=instruction[15] , out=cny);
+    Mux(a=false , b=instruction[7]  , sel=instruction[15] , out=cf);
+    Mux(a=false , b=instruction[6]  , sel=instruction[15] , out=cno);
+
     ALU(x=outD, y=outM5, 
-        zx=instruction[12],
-        nx=instruction[11],
-        zy=instruction[10],
-        ny=instruction[9],
-        f =instruction[8],
-        no=instruction[7],
+        zx=czx,
+        nx=cnx,
+        zy=czy,
+        ny=cny,
+        f =cf,
+        no=cno,
         out=aluout, out=outM, zr=zr, ng=ng);
 
     // Whether to jump
@@ -68,7 +79,7 @@ CHIP CPU {
     // if ps, j3  and(j3, ps)
     Mux4Way(a=aps, b=azr, c=ang, d=false, sel[1]=ng, sel[0]=zr, out=jump);
 
-    // 7 -- done
+    // 7
     // If we have a jump, the PC is loaded with A's output
     // Otherwise increment by 1
     // I believe inc is always true, because you always want it to at least increment

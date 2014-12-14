@@ -76,7 +76,8 @@ The compute instruction has the format 111accccccdddjjj.
         0: A-instruction
             x-j : 15 bit constant
         1: C-instruction
-            a+c : comp part // the 6 bit input for ALU
+            a   : whether ALU will operate on the A register or memory input
+            c   : comp part // the 6 bit input for ALU
             d   : dest part
             j   : jump part
 
