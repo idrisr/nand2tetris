@@ -141,3 +141,6 @@ Execute:
     1    0    1    AM         A register and Memory[A]
     1    1    0    AD         A register and D register
     1    1    1    AMD        A register, Memory[A], and D register
+
+i xx a cccccc ddd jjj
+1 11 0 110111 100 000

@@ -26,9 +26,13 @@ CHIP CPU {
     Mux16(a=instruction, b=aluout, sel=instruction[15], out=outm2);
 
     // 3
-    // load if A instruction, or d-A bit set
-    Not(in=instruction[15], out=aload); // If A instruction, load the value
-    ARegister(in=instruction, load=aload, out=outA, out[0..14]=addressM);
+    // load if A instruction, or d1 bit set
+    Not(in=instruction[15], out=Ainst); // If A instruction, load the value
+    Or(a=Ainst, b=instruction[5], out=aload);
+    // If Ainst, then load the instruction into the Aregister
+    // If d1 bit set, then load the output of the ALU
+    Mux16(a=instruction, b=aluout, sel=instruction[15], out=Ain);
+    ARegister(in=Ain, load=aload, out=outA, out[0..14]=addressM);
 
     // 4
     // load = 2nd d bit and C-instruction
