@@ -85,5 +85,6 @@ CHIP CPU {
     // I believe inc is always true, because you always want it to at least increment
     // load is whether the jump condition is satisfied
     // I believe the jbool is a function of the ALU output status bits zr and ng
-    PC(in=outA , load=jump, inc=true, reset=reset, out[0..14]=pc);
+    And(a=instruction[15], b=jump, out=cjump);
+    PC(in=outA , load=cjump, inc=true, reset=reset, out[0..14]=pc);
 }
