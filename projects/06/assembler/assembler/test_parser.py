@@ -43,7 +43,6 @@ class TestParser(TestCase):
         self.parser.command_type()
         self.assertEqual(self.parser.current_command_type, 'L')
 
-
         command = '@aLoop'
         self.parser.current_command = command
         self.parser.command_type()

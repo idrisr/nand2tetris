@@ -4,9 +4,35 @@ import sys
 import re
 from os import path, environ
 from code import Code
-from symboltable import SymbolTable
+#from symboltable import SymbolTable
 
-class Parser(object):
+class CommandType(object):
+    def command_type(self):
+        """
+        returns the type of the current command
+
+        returns one of:
+        A_COMMAND for @Xxx where Xxx is either a symbol or a decimal number
+        C_COMMAND for dest=comp; jump
+        L_COMMAND (actually, pseudo-command) for (Xxx) where Xxx is a symbol
+        """
+
+        commands = {'A': (lambda x: re.match(r'^@[0-9]*$', x)),
+                    'C': ((lambda x: re.match(r'^.*=.*$', x)),
+                          (lambda x: re.match(r'^.*;.*$', x))),
+                    'L': (lambda x: re.match(r'^@[^0-9].*$', x))}
+
+        if commands['A'](self.current_command):
+            self.current_command_type = 'A'
+        elif commands['C'][0](self.current_command) or commands['C'][1](self.current_command):
+            self.current_command_type = 'C'
+        elif commands['L'](self.current_command):
+            self.current_command_type = 'L'
+        else:
+            print '%s\tinvalid syntax' % (self.current_command, )
+            sys.exit(1)
+
+class Parser(CommandType):
     def __init__(self, asmfile):
         """ Open the input file/stream and gets ready to parse it """
         self.command_i = 0
@@ -23,6 +49,12 @@ class Parser(object):
     def file_clean(self):
         self.strip_comments()
         self.strip_blank_lines()
+        self.strip_parens()
+
+
+    def strip_parens(self):
+        self.buff = [line.strip() for line in self.buff if not re.match(r'\(.*\)', line)]
+
 
     def strip_comments(self):
         comment = '//'
@@ -51,29 +83,6 @@ class Parser(object):
         else:
             self.current_command = None
 
-    def command_type(self):
-        """
-        returns the type of the current command
-
-        returns one of:
-        A_COMMAND for @Xxx where Xxx is either a symbol or a decimal number
-        C_COMMAND for dest=comp; jump
-        L_COMMAND (actually, pseudo-command) for (Xxx) where Xxx is a symbol
-        """
-        commands = {'A': (lambda x: re.match(r'^@[0-9]*$', x)),
-                    'C': ((lambda x: re.match(r'^.*=.*$', x)),
-                          (lambda x: re.match(r'^.*;.*$', x))),
-                    'L': (lambda x: re.match(r'^@[^0-9].*$', x))}
-
-        if commands['A'](self.current_command):
-            self.current_command_type = 'A'
-        elif commands['C'][0](self.current_command) or commands['C'][1](self.current_command):
-            self.current_command_type = 'C'
-        elif commands['L'](self.current_command):
-            self.current_command_type = 'L'
-        else:
-            print '%s\tinvalid syntax' % (self.current_command, )
-            sys.exit(1)
 
     def symbol(self):
         """
