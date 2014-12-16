@@ -4,6 +4,7 @@ import sys
 import re
 from os import path, environ
 from code import Code
+from symboltable import SymbolTable
 
 class Parser(object):
     def __init__(self, asmfile):
@@ -59,10 +60,10 @@ class Parser(object):
         C_COMMAND for dest=comp; jump
         L_COMMAND (actually, pseudo-command) for (Xxx) where Xxx is a symbol
         """
-        commands = {'A': (lambda x: x.startswith('@')),
+        commands = {'A': (lambda x: re.match(r'^@[0-9]*$', x)),
                     'C': ((lambda x: re.match(r'^.*=.*$', x)),
                           (lambda x: re.match(r'^.*;.*$', x))),
-                    'L': (lambda x: re.match(r'^\(.*\)$', x))}
+                    'L': (lambda x: re.match(r'^@[^0-9].*$', x))}
 
         if commands['A'](self.current_command):
             self.current_command_type = 'A'
@@ -138,7 +139,7 @@ class Parser(object):
         self.current_jump = code.jump(j)
 
     def __repr__(self):
-        return ''.join(self.buff)
+        return self.asmfile + '\n'.join(self.buff)
 
     def binarize_c_command(self):
         self.comp() 

@@ -38,7 +38,13 @@ class TestParser(TestCase):
         self.parser.command_type()
         self.assertEqual(self.parser.current_command_type, 'A')
 
-        command = '(LOOP)'
+        command = '@LOOP'
+        self.parser.current_command = command
+        self.parser.command_type()
+        self.assertEqual(self.parser.current_command_type, 'L')
+
+
+        command = '@aLoop'
         self.parser.current_command = command
         self.parser.command_type()
         self.assertEqual(self.parser.current_command_type, 'L')
@@ -137,6 +143,11 @@ class TestParser(TestCase):
             self.parser.jump()
         self.assertEqual(cm.exception.code, 1)
 
+        command = '@2LOOP'
+        self.parser.current_command = command
+        with self.assertRaises(SystemExit) as cm:
+            self.parser.jump()
+        self.assertEqual(cm.exception.code, 1)
 
     def test_binarize_c_commands(self):
         #test case from Max.asm and Max.hack
