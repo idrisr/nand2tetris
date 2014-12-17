@@ -18,7 +18,7 @@ echo 'Checking RectL...'
 python ../assembler/parser.py ../../rect/RectL.asm > RectL.hack 
 diff -yb --suppress-common-lines RectL.hack ../../rect/RectL.hack
 
-echo 'Chekcing Max...'
+echo 'Checking Max...'
 python ../assembler/parser.py ../../max/Max.asm > Max.hack
 diff -yb --suppress-common-lines Max.hack ../../max/Max.hack
 
