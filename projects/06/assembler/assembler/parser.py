@@ -4,38 +4,15 @@ import sys
 import re
 from os import path, environ
 from code import Code
-#from symboltable import SymbolTable
+from symbol_table import SymbolTable
+from command_type import CommandType
 
-class CommandType(object):
-    def command_type(self):
-        """
-        returns the type of the current command
-
-        returns one of:
-        A_COMMAND for @Xxx where Xxx is either a symbol or a decimal number
-        C_COMMAND for dest=comp; jump
-        L_COMMAND (actually, pseudo-command) for (Xxx) where Xxx is a symbol
-        """
-
-        commands = {'A': (lambda x: re.match(r'^@[0-9]*$', x)),
-                    'C': ((lambda x: re.match(r'^.*=.*$', x)),
-                          (lambda x: re.match(r'^.*;.*$', x))),
-                    'L': (lambda x: re.match(r'^@[^0-9].*$', x))}
-
-        if commands['A'](self.current_command):
-            self.current_command_type = 'A'
-        elif commands['C'][0](self.current_command) or commands['C'][1](self.current_command):
-            self.current_command_type = 'C'
-        elif commands['L'](self.current_command):
-            self.current_command_type = 'L'
-        else:
-            print '%s\tinvalid syntax' % (self.current_command, )
-            sys.exit(1)
 
 class Parser(CommandType):
     def __init__(self, asmfile):
         """ Open the input file/stream and gets ready to parse it """
         self.command_i = 0
+        self.RAM = 16
         try:
             f = open(asmfile, 'r')
             self.asmfile = asmfile
@@ -46,15 +23,22 @@ class Parser(CommandType):
             print e
             sys.exit(1)
 
+        self.symbol_table = SymbolTable(self.buff)
+        self.symbol_table.find_symbols()
+
+        # strip symbols only after making symbol table
+        #self.strip_parens()
+
     def file_clean(self):
         self.strip_comments()
+        self.strip_inline_comments()
         self.strip_blank_lines()
-        self.strip_parens()
 
+    def strip_inline_comments(self):
+        self.buff = [line.split('//')[0] for line in self.buff]
 
     def strip_parens(self):
         self.buff = [line.strip() for line in self.buff if not re.match(r'\(.*\)', line)]
-
 
     def strip_comments(self):
         comment = '//'
@@ -154,22 +138,41 @@ class Parser(CommandType):
         self.comp() 
         self.dest()
         self.jump()
-        #self.a()
         self.bin_current = '111' + self.current_a + self.current_comp + self.current_dest + self.current_jump
 
-    def binarize_a_command(self):
+
+    def binarize_a_symbol(self):
+        if not self.symbol_table.contains(self.current_command):
+            self.symbol_table.addEntry(self.current_command, self.RAM)
+            self.RAM = self.RAM + 1
+
+        address = self.symbol_table.get_address(self.current_command)
+        bin_address = bin(address)[2:]
+        self.bin_current = '0' * (16 - len(bin_address))  + bin_address
+
+    def binarize_a_address(self):
         address = int(self.current_command[1:])
         bin_address = bin(address)[2:]
         self.bin_current = '0'*(16 - len(bin_address))  + bin_address
+
+    def binarize_a_command(self):
+        if re.match(r'^@[0-9].*$', self.current_command):
+            self.binarize_a_address()
+        else:
+            self.binarize_a_symbol()
 
 def main(asmfile):
     parser = Parser(asmfile)
     while True:
         parser.advance()
+
         if parser.current_command_type == 'A':
             parser.binarize_a_command()
         elif parser.current_command_type == 'C':
             parser.binarize_c_command()
+        elif parser.current_command_type == 'L':
+            continue
+
         print parser.bin_current
         if not parser.has_more_commands():
             break

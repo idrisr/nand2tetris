@@ -41,12 +41,17 @@ class TestParser(TestCase):
         command = '@LOOP'
         self.parser.current_command = command
         self.parser.command_type()
+        self.assertEqual(self.parser.current_command_type, 'A')
+
+        command = '(LOOP)'
+        self.parser.current_command = command
+        self.parser.command_type()
         self.assertEqual(self.parser.current_command_type, 'L')
 
         command = '@aLoop'
         self.parser.current_command = command
         self.parser.command_type()
-        self.assertEqual(self.parser.current_command_type, 'L')
+        self.assertEqual(self.parser.current_command_type, 'A')
 
         command = 'D=D+A'
         self.parser.current_command = command
@@ -165,6 +170,48 @@ class TestParser(TestCase):
     def test_binarize_a_commands(self):
         command = '@14'
         bin_command = '0000000000001110'
+        self.parser.current_command = command
+        self.parser.binarize_a_command()
+        self.assertEqual(self.parser.bin_current, bin_command)
+
+    def test_binarize_avar_commands(self):
+        """ test translation of variable into bin using symbol table """
+        command = '@INFINITE_LOOP'
+        self.parser.symbol_table.addEntry(command, 23)
+
+        bin_command = '0000000000010111'
+        self.parser.current_command = command
+        self.parser.binarize_a_command()
+        self.assertEqual(self.parser.bin_current, bin_command)
+
+    def test_symbol_not_in_table(self):
+        """ test for when newly encountered symbol not in symbol table"""
+
+
+        ram_addr = self.parser.symbol_table.table.values()
+
+        # remove reserved addresses
+        ram_addr.sort()
+        reserved = { '@SCREEN' : 16384, '@KBD'    : 24576}
+        for v in reserved.values():
+            ram_addr.remove(v)
+
+        ram_addr = ram_addr[16:]
+        next_ram = ram_addr[-1] + 1
+        bin_addr = bin(next_ram)[2:]
+        bin_command = '0' * (16 - len(bin_addr))  + bin_addr
+
+        command = '@new_command'
+        self.parser.current_command = command
+        self.parser.binarize_a_command()
+        self.assertEqual(self.parser.bin_current, bin_command)
+
+        next_ram = next_ram +1 
+        bin_addr = bin(next_ram)[2:]
+        bin_command = '0' * (16 - len(bin_addr))  + bin_addr
+
+        command = '@newer_command'
+        bin_command = '0' * (16 - len(bin_addr))  + bin_addr
         self.parser.current_command = command
         self.parser.binarize_a_command()
         self.assertEqual(self.parser.bin_current, bin_command)

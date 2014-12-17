@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
-from parser import CommandType
+from command_type import CommandType
+import re
 
 class SymbolTable(CommandType):
     def __init__(self, lines):
@@ -9,9 +10,9 @@ class SymbolTable(CommandType):
         input:
             lines: a whitespace and comments stripped version of the asm file
         """
-        self.next_addr = 1024
+        self.next_addr = 16
         self.buff = lines
-        self.table = {
+        table = {
              '@SP'    : 0,
             '@LCL'    : 1,
             '@ARG'    : 2,
@@ -20,20 +21,20 @@ class SymbolTable(CommandType):
             '@SCREEN' : 16384,
             '@KBD'    : 24576}
         R = {'@R'+str(i): i  for i in xrange(0, 16)}
-        self.table.update(R)
-
+        table.update(R)
+        self.table = table
 
     def find_symbols(self):
+        ROM = 0
         for line in self.buff:
             self.current_command = line.strip()
             self.command_type()
-            if self.current_command_type == 'L':
-                if not self.contains(self.current_command):
-                    self.addEntry(self.current_command, self.next_addr)
-                    self.increment_address()
-
-    def increment_address(self):
-        self.next_addr = self.next_addr + 1
+            if self.current_command_type == 'L' and re.match(r'^\(.*\)$', self.current_command):
+                command = '@' + self.current_command[1:-1]
+                if not self.contains(command):
+                    self.addEntry(command, ROM)
+            elif self.current_command_type in {'C', 'A'}:
+                ROM = ROM + 1
 
     def addEntry(self, symbol, address):
         """ Adds the pair (symbol, address) to the table """
@@ -60,5 +61,4 @@ if __name__ == '__main__':
     dir = environ['HOME']
     file = 'learning/nand2tetris/projects/06/rect/Rect.asm'
     parser = Parser(path.join(dir, file))
-    symbol_table = SymbolTable(parser.buff)
-    symbol_table.find_symbols()
+    print parser.symbol_table
