@@ -7,8 +7,7 @@ from code import Code
 from symbol_table import SymbolTable
 from command_type import CommandType
 
-
-class Parser(CommandType):
+class AssmParser(CommandType):
     def __init__(self, asmfile):
         """ Open the input file/stream and gets ready to parse it """
         self.command_i = 0
@@ -162,7 +161,7 @@ class Parser(CommandType):
             self.binarize_a_symbol()
 
 def main(asmfile):
-    parser = Parser(asmfile)
+    parser = AssmParser(asmfile)
     while True:
         parser.advance()
 

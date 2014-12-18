@@ -57,8 +57,8 @@ class SymbolTable(CommandType):
 
 if __name__ == '__main__':
     from os import path, environ
-    from parser import Parser
+    from parser import AssmParser
     dir = environ['HOME']
     file = 'learning/nand2tetris/projects/06/rect/Rect.asm'
-    parser = Parser(path.join(dir, file))
+    parser = AssmParser(path.join(dir, file))
     print parser.symbol_table

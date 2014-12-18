@@ -1,15 +1,15 @@
 #!/usr/bin/env python
 
 from unittest import TestCase
-from parser import Parser
+from parser import AssmParser
 from os import environ, path
 
 
-class TestParser(TestCase):
+class TestAssmParser(TestCase):
     def setUp(self):
         dir = environ['HOME']
         file = 'learning/nand2tetris/projects/06/add/Add.asm'
-        self.parser = Parser(path.join(dir, file))
+        self.parser = AssmParser(path.join(dir, file))
 
     def test_has_more_commands(self):
         commands = len(self.parser.buff)

@@ -2,14 +2,14 @@
 
 from unittest import TestCase
 from os import path, environ
-from parser import Parser
+from parser import AssmParser
 
 class TestSymbolTable(TestCase):
     longMessage = True
     def setUp(self):
         dir = environ['HOME']
         file = 'learning/nand2tetris/projects/06/rect/Rect.asm'
-        self.parser = Parser(path.join(dir, file))
+        self.parser = AssmParser(path.join(dir, file))
 
     def test_keys(self):
         self.assertTrue(self.parser.symbol_table.contains('@INFINITE_LOOP'))
