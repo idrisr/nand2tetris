@@ -11,27 +11,14 @@ from command_type import AssmCommandType
 
 
 class AssmParser(AssmCommandType, Parser):
-    def __init__(self, asmfile):
+    def __init__(self, file_name):
         """ Open the input file/stream and gets ready to parse it """
+        super(AssmParser, self).__init__(file_name)
         self.command_i = 0
         self.RAM = 16
-        try:
-            f = open(asmfile, 'r')
-            self.asmfile = asmfile
-            self.buff = f.readlines()
-            self.file_clean()
-
-        except IOError, e:
-            print e
-            sys.exit(1)
 
         self.symbol_table = SymbolTable(self.buff)
         self.symbol_table.find_symbols()
-
-        # strip symbols only after making symbol table
-        #self.strip_parens()
-
-
 
     def symbol(self):
         """

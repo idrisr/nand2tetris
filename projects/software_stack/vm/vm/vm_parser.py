@@ -7,19 +7,7 @@ from command_type import VMCommandType
 
 class VMParser(Parser):
     def __init__(self, file_name):
-        # test file exists
-        # if not exit 1
-        try:
-            self.file = open(file_name, 'r')
-            self.file_name = file_name
-            self.read_file()
-
-        except IOError, e:
-            print e
-            sys.exit(1)
-        finally:
-            self.file.close()
-
+        super(VMParser, self).__init__(file_name)
         self.vmct = VMCommandType()
 
     def command_type(self):
@@ -63,18 +51,3 @@ class VMParser(Parser):
             print '%s\tInvalid Command Type' % (self.cur_command_type, )
             sys.exit(1)
 
-class CodeWriter(object):
-    def __init__(self):
-        pass
-
-    def set_file_name(self):
-        pass
-
-    def write_arithmetic(self):
-        pass
-
-    def write_push_pop(self):
-        pass
-
-    def close(self):
-        pass
