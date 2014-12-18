@@ -7,10 +7,10 @@ import re
 from os import path, environ
 from code import Code
 from symbol_table import SymbolTable
-from command_type import CommandType
+from command_type import AssmCommandType
 
 
-class AssmParser(CommandType, Parser):
+class AssmParser(AssmCommandType, Parser):
     def __init__(self, asmfile):
         """ Open the input file/stream and gets ready to parse it """
         self.command_i = 0
@@ -46,7 +46,7 @@ class AssmParser(CommandType, Parser):
         """
         returns the dest mnemonic in the current C_COMMAND (8 possibilities).
 
-        Should be called only when CommandType() is C_COMMAND
+        Should be called only when AssmCommandType() is C_COMMAND
 
         returns string
         """

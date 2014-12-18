@@ -19,7 +19,6 @@ class VMParser(Parser):
             self.file.close()
 
 
-
     def command_type(self):
         pass
 

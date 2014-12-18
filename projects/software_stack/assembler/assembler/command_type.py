@@ -1,7 +1,7 @@
 import re
 import sys
 
-class CommandType(object):
+class AssmCommandType(object):
     def command_type(self):
         """
         returns the type of the current command

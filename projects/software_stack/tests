@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+function activate_(){
+    pushd . > /dev/null
+    cd ${HOME}/.virtualenvs/n2t/
+    . bin/activate
+    echo 'Virtual Environment activated:' `which python`
+    popd > /dev/null
+}
+
+nosetests vm
+nosetests assembler
+nosetests parser
+
+pushd .
+cd assembler/bin
+./compare.sh
+popd > /dev/null

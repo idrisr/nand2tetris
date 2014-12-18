@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 
-from command_type import CommandType
+from command_type import AssmCommandType
 import re
 
-class SymbolTable(CommandType):
+class SymbolTable(AssmCommandType):
     def __init__(self, lines):
         """ creates a new empty symbol table
 
