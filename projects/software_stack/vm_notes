@@ -1,0 +1,20 @@
+RAM Usage
+Address     | Usage
+------------|----------------------------------------------------------------
+0-15        | sixteen virtual registers
+16-255      | static variables (of all the VM functions in the VM program)
+256-2047    | Stack
+2048-16384  | Heap (used to store objects and arrays)
+16384-24575 | Memory mapped I/O
+
+
+Segments
+Registers  | Name | Usage
+-----------|------|------------------------------------------------------------------
+RAM[0]     | SP   | Stack pointer. points to the next topmost location in the stack
+RAM[1]     | LCL  | Points to the base of the current VM function's local segment
+RAM[2]     | ARG  | Points to the base of the current VM function's argument segment
+RAM[3]     | THIS | Points to the base of the current this segment (within the heap)
+RAM[4]     | THAT | Points to the base of the current that segment (within the heap)
+RAM[5-12]  |      | Holds the contents of the temp segment
+RAM[13-15] |      | Can be used by the VM implementation as general purpose registers
