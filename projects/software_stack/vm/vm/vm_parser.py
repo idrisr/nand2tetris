@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 
 import sys
+from parser import Parser
 
-class Parser(object):
+class VMParser(Parser):
     def __init__(self, file_name):
         # test file exists
         # if not exit 1
