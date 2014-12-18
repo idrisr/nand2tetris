@@ -12,11 +12,9 @@ class TestVMParser(TestCase):
         self.parser = VMParser(file_name)
         remove(file_name)
 
-
     def test_constructor(self):
         # for existing file
         self.assertTrue(isinstance(self.parser, VMParser))
-
 
     def test_constructor_file_not_there(self):
         # for no longer existing file
