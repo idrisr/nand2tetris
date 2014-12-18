@@ -116,3 +116,25 @@ class TestVMParser(TestCase):
         with self.assertRaises(SystemExit) as cm:
             self.parser.arg1()
         self.assertEqual(cm.exception.code, 1)
+
+    def test_arg2(self):
+        """ test parse out arg2 """
+        command = 'push constant 21'
+        self.parser.current_command = command
+
+        self.parser.command_type()
+        self.parser.arg1()
+        self.parser.arg2()
+
+        self.assertEqual('21', self.parser.curr_arg2)
+        self.assertEqual('constant', self.parser.curr_arg1)
+
+    def test_arg2_bad_command_type(self):
+        """ test parse out arg2 """
+        command = 'add'
+        self.parser.current_command = command
+        self.parser.command_type()
+
+        with self.assertRaises(SystemExit) as cm:
+            self.parser.arg2()
+        self.assertEqual(cm.exception.code, 1)

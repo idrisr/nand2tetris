@@ -57,24 +57,24 @@ class VMParser(Parser):
             self.curr_arg1 = self.current_command.split()[1]
 
     def arg2(self):
-        pass
+        if self.cur_command_type in {'C_PUSH', 'C_POP', 'C_FUNCTION', 'C_CALL'}:
+            self.curr_arg2 = self.current_command.split()[2]
+        else:
+            print '%s\tInvalid Command Type' % (self.cur_command_type, )
+            sys.exit(1)
 
 class CodeWriter(object):
     def __init__(self):
         pass
 
-
     def set_file_name(self):
         pass
-
 
     def write_arithmetic(self):
         pass
 
-
     def write_push_pop(self):
         pass
-
 
     def close(self):
         pass
