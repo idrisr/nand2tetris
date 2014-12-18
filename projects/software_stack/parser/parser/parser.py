@@ -1,9 +1,29 @@
 #!/usr/bin/env python
 
 import re
+import sys
 
 class Parser(object):
     """ Interface for Parser objects """
+    def __init__(self, file_name):
+        # test file exists
+        # if not exit 1
+        try:
+            self.file = open(file_name, 'r')
+            self.file_name = file_name
+            self.read_file()
+
+        except IOError, e:
+            print e
+            sys.exit(1)
+        finally:
+            self.file.close()
+
+    def read_file(self):
+        self.buff = self.file.readlines()
+        self.file_clean()
+        self.file.close()
+
     def file_clean(self):
         self.strip_comments()
         self.strip_inline_comments()
