@@ -59,6 +59,6 @@ if __name__ == '__main__':
     from os import path, environ
     from parser import AssmParser
     dir = environ['HOME']
-    file = 'learning/nand2tetris/projects/06/rect/Rect.asm'
+    file = 'learning/nand2tetris/projects/software_stack/assembler/rect/Rect.asm'
     parser = AssmParser(path.join(dir, file))
     print parser.symbol_table

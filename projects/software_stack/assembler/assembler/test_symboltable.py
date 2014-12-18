@@ -2,13 +2,13 @@
 
 from unittest import TestCase
 from os import path, environ
-from parser import AssmParser
+from assm_parser import AssmParser
 
 class TestSymbolTable(TestCase):
     longMessage = True
     def setUp(self):
         dir = environ['HOME']
-        file = 'learning/nand2tetris/projects/06/rect/Rect.asm'
+        file = 'learning/nand2tetris/projects/software_stack/assembler/rect/Rect.asm'
         self.parser = AssmParser(path.join(dir, file))
 
     def test_keys(self):

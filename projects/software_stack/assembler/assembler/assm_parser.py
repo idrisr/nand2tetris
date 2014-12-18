@@ -147,6 +147,6 @@ if __name__ == '__main__':
         asmfile = sys.argv[1]
     except IndexError:
         dir = environ['HOME']
-        file = 'learning/nand2tetris/projects/06/add/Add.asm'
+        file = 'learning/nand2tetris/projects/software_stack/assembler/add/Add.asm'
         asmfile = path.join(dir, file)
     main(asmfile)
