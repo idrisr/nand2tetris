@@ -5,7 +5,6 @@ import re
 from parser import Parser
 from command_type import VMCommandType
 
-
 class VMParser(Parser):
     def __init__(self, file_name):
         # test file exists
@@ -53,9 +52,9 @@ class VMParser(Parser):
             print '%s\tInvalid Command Type' % (self.cur_command_type, )
             sys.exit(1)
         elif self.cur_command_type == 'C_ARITHMETIC':
-            self.arg1 = self.current_command
+            self.curr_arg1 = self.current_command
         else:
-            self.arg1 = self.current_command.split()[1]
+            self.curr_arg1 = self.current_command.split()[1]
 
     def arg2(self):
         pass

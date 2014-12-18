@@ -23,13 +23,6 @@ class TestVMParser(TestCase):
             self.parser.__init__(file_name)
         self.assertEqual(cm.exception.code, 1)
 
-    def test_arg1(self):
-        command = 'push constant 21'
-        self.parser.current_command = command
-        self.parser.command_type()
-        self.parser.arg1()
-        self.assertEqual('constant', self.parser.arg1)
-
     def test_push(self):
         """ test recognizing push commands """
         self.parser.current_command = 'push constant 7'
@@ -92,4 +85,34 @@ class TestVMParser(TestCase):
 
         with self.assertRaises(SystemExit) as cm:
             self.parser.command_type()
+        self.assertEqual(cm.exception.code, 1)
+
+    def test_arg1(self):
+        """ test parse out arg1 """
+        command = 'push constant 21'
+        self.parser.current_command = command
+        self.parser.command_type()
+        self.parser.arg1()
+        self.assertEqual('constant', self.parser.curr_arg1)
+
+        command = 'pop pointer 1'
+        self.parser.current_command = command
+        self.parser.command_type()
+        self.parser.arg1()
+        self.assertEqual('pointer', self.parser.curr_arg1)
+
+        command = 'add'
+        self.parser.current_command = command
+        self.parser.command_type()
+        self.parser.arg1()
+        self.assertEqual('add', self.parser.curr_arg1)
+
+    def test_arg1_bad_command_type(self):
+        """ test parse out arg1 """
+        command = 'return sum'
+        self.parser.current_command = command
+        self.parser.command_type()
+
+        with self.assertRaises(SystemExit) as cm:
+            self.parser.arg1()
         self.assertEqual(cm.exception.code, 1)
