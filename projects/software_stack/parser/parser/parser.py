@@ -8,21 +8,20 @@ class Parser(object):
     def __init__(self, file_name):
         # test file exists
         # if not exit 1
+        self.command_i = 0
         try:
-            self.file = open(file_name, 'r')
             self.file_name = file_name
+            self.file_handle = open(self.file_name, 'r')
             self.read_file()
 
         except IOError, e:
             print e
             sys.exit(1)
-        finally:
-            self.file.close()
 
     def read_file(self):
-        self.buff = self.file.readlines()
+        self.buff = self.file_handle.readlines()
+        self.file_handle.close()
         self.file_clean()
-        self.file.close()
 
     def file_clean(self):
         self.strip_comments()
@@ -47,6 +46,7 @@ class Parser(object):
         Are there more commands in the input? 
         returns Boolean
         """
+        # TODO: should just pop the lines off the list instead keeping track of the index
         return len(self.buff) > self.command_i 
 
     def advance(self):

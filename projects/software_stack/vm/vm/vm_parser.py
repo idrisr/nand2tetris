@@ -2,13 +2,12 @@
 
 from parser import Parser
 from vm_command import VMCommand
+from code_writer import CodeWriter
+from os import path, environ
+import sys
 
 class VMParser(Parser):
     """ holds memory state, like SP poinger """
-
-    def __init__(self, file_name):
-        super(VMParser, self).__init__(file_name)
-
     def advance(self):
         """
         Reads the next command from the input and makes it the current
@@ -16,12 +15,33 @@ class VMParser(Parser):
         there is no current command
         """
         if self.has_more_commands():
-            self.current_command = VMCommand(self.buff[self.command_i])
+            self.command = VMCommand(self.buff[self.command_i])
             self.command_i = self.command_i + 1
         else:
-            self.current_command = None
+            self.command = None
+
+    def __repr__(self):
+        attributes = ['self.buff', 'file_name', 'command_i']
+        return ''.join(['%s\n' % getattr(self, _, '') for _ in attributes])
+
+
+def main(vmfile):
+    vmparser = VMParser(vmfile)
+    cw = CodeWriter()
+
+    while True:
+        vmparser.advance()
+        cw.process_command(vmparser.command)
+
+        if not vmparser.has_more_commands():
+            break
+
 
 if __name__ == '__main__':
-    pass
-    #while more commands:
-        #code_writer(VMParser.cur_command)
+    try:
+        vmfile = sys.argv[1]
+    except IndexError:
+        dir = environ['HOME']
+        file = 'learning/nand2tetris/projects/software_stack/vm/StackArithmetic/SimpleAdd/SimpleAdd.vm'
+        vmfile = path.join(dir, file)
+        main(vmfile)

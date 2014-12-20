@@ -14,7 +14,6 @@ class AssmParser(AssmCommandType, Parser):
     def __init__(self, file_name):
         """ Open the input file/stream and gets ready to parse it """
         super(AssmParser, self).__init__(file_name)
-        self.command_i = 0
         self.RAM = 16
 
         self.symbol_table = SymbolTable(self.buff)

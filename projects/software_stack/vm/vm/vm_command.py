@@ -60,5 +60,5 @@ class VMCommand(object):
             sys.exit(1)
 
     def __repr__(self):
-        attributes = ['command', 'type', 'arg0', 'arg1', 'arg2']
-        return ''.join(['%s\n' % getattr(self, _, '') for _ in attributes])
+        attributes = ['command', 'ctype', 'arg0', 'arg1', 'arg2']
+        return ''.join(['%s:\t%s\n' % (_, getattr(self, _, ''), ) for _ in attributes])

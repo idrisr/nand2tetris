@@ -15,15 +15,19 @@ class CodeWriter(object):
         # dont really need to keep track of SP. Can calc it by 256 + len(self.stack)
         # of course this requires constantly measuing the lenght of the list
         # but does it really matter?
-        self.SP = 256
+        self.SP_update()
+
+    def SP_update(self):
+        self.SP = 256 + len(self.stack)
 
     def process_command(self, command):
         """ call proper methods of this class based on the command type """
         self.command = command
+        self.command.parse_command()
         ctypes = {
-            'C_ARITHMETIC' : self.add(),
-            'C_PUSH'       : self.push(),
-            'C_POP'        : self.push(),
+            'C_ARITHMETIC' : self.write_arithmetic,
+            'C_PUSH'       : self.write_push,
+            'C_POP'        : self.write_pop,
             'C_LABEL'      : lambda x: x,
             'C_GOTO'       : lambda x: x,
             'C_IF'         : lambda x: x,
@@ -32,7 +36,12 @@ class CodeWriter(object):
             'C_CALL'       : lambda x: x
         }
 
-        ctypes[command.ctype]()
+        ctypes[self.command.ctype]()
+        self.write_command()
+
+
+    def write_command(self):
+        print self.assm
 
 
     def open_stream(self, file_name):
@@ -76,6 +85,7 @@ class CodeWriter(object):
 
         a = int(self.stack.pop())
         b = int(self.stack.pop())
+        self.SP_update()
 
         result = operand[self.command.arg1]((a, b))
         self.stack.extend([result])
@@ -84,6 +94,9 @@ class CodeWriter(object):
         asm.extend(['@%s' % (self.SP + len(self.stack))])
         asm.extend(['M=M+D'])
         self.assm = '\n'.join(asm)
+
+    def write_pop(self):
+        print 'write pop'
 
     def write_push(self):
         assert self.command.ctype == 'C_PUSH'
@@ -94,8 +107,8 @@ class CodeWriter(object):
         asm.extend(["D=A"])
         asm.extend(['@%s'  % (self.SP, )])
         asm.extend(['M=D'])
-        self.SP = self.SP + 1
 
+        self.SP_update()
         self.assm = '\n'.join(asm)
 
     def close(self):

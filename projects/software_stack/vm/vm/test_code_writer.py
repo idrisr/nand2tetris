@@ -20,13 +20,14 @@ class TestCodeWriter(TestCase):
 
         # empty stack
         self.clear_stack()
+
+        # need to update SP, ie RAM[0]
         command = "push constant 7"
         asm_command = '\n'.join(['@7', 'D=A',  '@256', 'M=D'])
         self.command = VMCommand(command)
         self.command.parse_command()
         self.cw.command = self.command
         self.cw.write_push()
-
         self.assertEqual(asm_command, self.cw.assm)
 
     def test_write_two_push_constant(self):
@@ -85,4 +86,7 @@ class TestCodeWriter(TestCase):
 
         l = ['@256', 'M=M+D']
         asm_command = '\n'.join(l)
+
+    def test_write_command_to_file(self):
+        pass
 

@@ -40,11 +40,13 @@ add
 D=A
 @256
 M=D
+TODO: update SP, RAM[0]
 
 @8
 D=A
 @257
 M=D
+TODO: update SP, RAM[0]
 
 @256
 M=M+D
@@ -59,3 +61,7 @@ Command Types:
     C_FUNCTION   
     C_RETURN     
     C_CALL       
+
+Testing:
+    create the assm file from the vm file
+    use the emulator and check out the output vs the expected file
