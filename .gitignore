@@ -5,3 +5,4 @@
 *bat
 *pyc
 *.coverage
+*vim
