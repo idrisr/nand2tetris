@@ -1,8 +1,8 @@
 // push constant 7
 @7
-D=A
+D=A 
 @256
-M=D
+M=D // put 7 into M[256]. also need to increment the stack pointer
 
 // push constant 8
 @8
