@@ -18,6 +18,9 @@ RAM[4]     | THAT | Points to the base of the current that segment (within the h
 RAM[5-12]  |      | Holds the contents of the temp segment
 RAM[13-15] |      | Can be used by the VM implementation as general purpose registers
 
+where do the segments start and stop
+
+
 Segments
     argument
     local
@@ -27,3 +30,19 @@ Segments
     that
     pointer
     temp
+
+// Pushes and adds two constants.
+push constant 7
+push constant 8
+add
+
+@7
+D=A
+@256
+M=D
+@8
+D=A
+@257
+M=D
+@256
+M=M+D
