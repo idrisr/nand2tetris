@@ -8,10 +8,13 @@ class VMCommand(object):
         self.command = command
 
     def parse_command(self):
-        self.set_ctype()
-        self.set_arg0()
-        self.set_arg1()
-        self.set_arg2()
+        try:
+            self.set_ctype()
+            self.set_arg0()
+            self.set_arg1()
+            self.set_arg2()
+        except SystemError:
+            pass
 
     def set_ctype(self):
         arith_commands = ['add', 'sub', 'neg', 'eq', 'gt', 'lt', 'and', 'or', 'not']

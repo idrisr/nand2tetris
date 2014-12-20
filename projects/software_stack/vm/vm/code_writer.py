@@ -1,8 +1,12 @@
 #!/usr/bin/env python
 
 class CodeWriter(object):
-    """ I feel this object should simply take a command and return its assm equivalent """
-    """ Most likely the VMParser objet will have a CodeWriter """
+    """
+        I feel this object should simply take a command and return its assm equivalent
+        Most likely the VMParser objet will have a CodeWriter
+        currently CodeWriter holds the state of the stack and other memory segments
+        I might break this out into another class
+    """
 
     def __init__(self):
         """ opens the output file/stream and gets ready to write into it """
@@ -46,6 +50,18 @@ class CodeWriter(object):
         command where command is either C_PUSH or C_POP
         """
         pass
+
+    def write_push(self, command):
+        assert command.ctype == 'C_PUSH'
+        asm = []
+        asm.extend(['@%s' % ( command.arg2, )] )
+        asm.extend(["D=A"])
+        asm.extend(['@%s'  % (self.SP, )])
+        asm.extend(['M=D'])
+        self.SP = self.SP + 1
+        print asm
+
+        return '\n'.join(asm)
 
     def close(self):
         """ Closes the output file """
