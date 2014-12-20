@@ -12,7 +12,6 @@ class TestCodeWriter(TestCase):
             self.cw.SP+=1
 
     def clear_stack(self):
-        print 'in clearn stack'
         self.cw.stack = []
         self.cw.SP = 256
 
@@ -63,3 +62,32 @@ class TestCodeWriter(TestCase):
         self.command.parse_command()
         write_out = self.cw.write_push(self.command)
         self.assertEqual(asm_command, write_out)
+
+    def test_add_command(self):
+        """ 
+        test popping top two items off of stack, adding them, and putting
+        the result back on the stack 
+        """
+
+        # empty stack
+        self.clear_stack()
+
+        # put 7 & 8 on the stack to add
+        command = "push constant 7"
+        asm_command = '\n'.join(['@7', 'D=A',  '@256', 'M=D'])
+        self.command = VMCommand(command)
+        self.command.parse_command()
+        write_out = self.cw.write_push(self.command)
+
+        command = "push constant 8"
+        asm_command = '\n'.join(['@8', 'D=A', '@257', 'M=D'])
+        self.command = VMCommand(command)
+        self.command.parse_command()
+        write_out = self.cw.write_push(self.command)
+        self.assertEqual(asm_command, write_out)
+
+        command = "add"
+        self.command = VMCommand(command)
+        self.command.parse_command()
+        result = self.cw.write_arithmetic(self.command)
+        self.assertEqual(result, 15)

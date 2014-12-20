@@ -13,6 +13,24 @@ class CodeWriter(object):
         self.stack = []
         self.SP = 256
 
+    def process_command(self, command):
+        """ call proper methods of this class based on the command type """
+        self.command = command
+        ctypes = {
+            'C_ARITHMETIC' : self.add(),
+            'C_PUSH'       : self.push(),
+            'C_POP'        : self.push(),
+            'C_LABEL'      : lambda x: x,
+            'C_GOTO'       : lambda x: x,
+            'C_IF'         : lambda x: x,
+            'C_FUNCTION'   : lambda x: x,
+            'C_RETURN'     : lambda x: x,
+            'C_CALL'       : lambda x: x
+        }
+
+        ctypes[command.ctype]()
+
+
     def open_stream(self, file_name):
         # TODO: try blocks etc. doing this boilerplate an awful lot...
         self.f = open(file_name, 'w')
@@ -25,7 +43,7 @@ class CodeWriter(object):
         return self.stack.pop()
 
     def push(self, i):
-        """ push element off stack """
+        """ push element onto stack """
         # increment stack pointer
         self.SP = self.SP + 1
         return self.stack.extend(i)
@@ -37,12 +55,26 @@ class CodeWriter(object):
         """
         pass
 
-    def write_arithmetic(self):
+    def write_arithmetic(self, command):
         """
         Writes the assembly code that is the translation of the given
         arithmetic command
         """
-        pass
+        # pop top two items off of the stack
+        # do the proper arithmetic operand
+
+        # theres some more clever way of doing this using the +, -, * etc symbols
+        operand = {'add': lambda x: x[0]+x[1],
+                   'sub': lambda x: x[0]-x[1]}
+
+        assert command.ctype == 'C_ARITHMETIC'
+
+        a = self.stack.pop()
+        b = self.stack.pop()
+
+        result = operand[self.command.arg1]((a, b))
+        self.stack.push( result )
+        return self.stack[-1]
 
     def write_push_pop(self):
         """
@@ -53,16 +85,20 @@ class CodeWriter(object):
 
     def write_push(self, command):
         assert command.ctype == 'C_PUSH'
+
         asm = []
         asm.extend(['@%s' % ( command.arg2, )] )
         asm.extend(["D=A"])
         asm.extend(['@%s'  % (self.SP, )])
         asm.extend(['M=D'])
         self.SP = self.SP + 1
-        print asm
 
         return '\n'.join(asm)
 
     def close(self):
         """ Closes the output file """
         pass
+
+    def __repr__(self):
+        attributes = ['stack', 'SP', 'command']
+        return ''.join(['%r\n' % getattr(self, _, '') for _ in attributes])
