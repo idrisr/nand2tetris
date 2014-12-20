@@ -15,22 +15,6 @@ class TestCodeWriter(TestCase):
         self.cw.stack = []
         self.cw.SP = 256
 
-    def test_SP(self):
-        """ test SP stack pointer in the right place """
-        SP_before = 256 + len(self.cw.stack)
-        self.assertEqual(self.cw.SP, SP_before)
-
-        self.cw.pop()
-        self.assertEqual(self.cw.SP, SP_before-1)
-
-    def test_pop(self):
-        """ test pop'ing element of the stack """
-        SP_before = self.cw.SP
-        last_element = self.cw.stack[-1]
-        p = self.cw.pop()
-        self.assertEqual(last_element, p)
-        self.assertEqual(SP_before - 1, self.cw.SP)
-
     def test_write_push_constant(self):
         """ test push constant [0-9]* """
 
@@ -40,9 +24,10 @@ class TestCodeWriter(TestCase):
         asm_command = '\n'.join(['@7', 'D=A',  '@256', 'M=D'])
         self.command = VMCommand(command)
         self.command.parse_command()
-        write_out = self.cw.write_push(self.command)
+        self.cw.command = self.command
+        self.cw.write_push()
 
-        self.assertEqual(asm_command, write_out)
+        self.assertEqual(asm_command, self.cw.assm)
 
     def test_write_two_push_constant(self):
         """ push contant [0-9]* twice in a row"""
@@ -54,16 +39,18 @@ class TestCodeWriter(TestCase):
         asm_command = '\n'.join(['@7', 'D=A',  '@256', 'M=D'])
         self.command = VMCommand(command)
         self.command.parse_command()
-        write_out = self.cw.write_push(self.command)
+        self.cw.command = self.command
+        self.cw.write_push()
 
         command = "push constant 8"
         asm_command = '\n'.join(['@8', 'D=A', '@257', 'M=D'])
         self.command = VMCommand(command)
         self.command.parse_command()
-        write_out = self.cw.write_push(self.command)
-        self.assertEqual(asm_command, write_out)
+        self.cw.command = self.command
+        self.cw.write_push()
+        self.assertEqual(asm_command, self.cw.assm)
 
-    def test_add_command(self):
+    def test_write_add_command(self):
         """ 
         test popping top two items off of stack, adding them, and putting
         the result back on the stack 
@@ -77,17 +64,25 @@ class TestCodeWriter(TestCase):
         asm_command = '\n'.join(['@7', 'D=A',  '@256', 'M=D'])
         self.command = VMCommand(command)
         self.command.parse_command()
-        write_out = self.cw.write_push(self.command)
+        self.cw.command = self.command
+        self.cw.write_push()
 
         command = "push constant 8"
         asm_command = '\n'.join(['@8', 'D=A', '@257', 'M=D'])
         self.command = VMCommand(command)
         self.command.parse_command()
-        write_out = self.cw.write_push(self.command)
-        self.assertEqual(asm_command, write_out)
+        self.cw.command = self.command
+        self.cw.write_push()
+        self.assertEqual(asm_command, self.cw.assm)
 
         command = "add"
         self.command = VMCommand(command)
         self.command.parse_command()
-        result = self.cw.write_arithmetic(self.command)
-        self.assertEqual(result, 15)
+        # thisll be set in CodeWriter.process_command()
+        self.cw.command = self.command
+        self.cw.write_arithmetic()
+        self.assertEqual(self.cw.stack[-1], 15, self.cw)
+
+        l = ['@256', 'M=M+D']
+        asm_command = '\n'.join(l)
+

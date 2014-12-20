@@ -11,6 +11,10 @@ class CodeWriter(object):
     def __init__(self):
         """ opens the output file/stream and gets ready to write into it """
         self.stack = []
+
+        # dont really need to keep track of SP. Can calc it by 256 + len(self.stack)
+        # of course this requires constantly measuing the lenght of the list
+        # but does it really matter?
         self.SP = 256
 
     def process_command(self, command):
@@ -36,17 +40,17 @@ class CodeWriter(object):
         self.f = open(file_name, 'w')
         pass
 
-    def pop(self):
-        """ returns popped element off stack """
-        # decrement stack pointer
-        self.SP = self.SP - 1
-        return self.stack.pop()
+    # def pop(self):                       
+        # """ returns popped element off stack """
+        # # decrement stack pointer
+        # self.SP = self.SP - 1     
+        # return self.stack.pop()    
 
-    def push(self, i):
-        """ push element onto stack """
-        # increment stack pointer
-        self.SP = self.SP + 1
-        return self.stack.extend(i)
+    # def push(self, i):          
+        # """ push element onto stack """
+        # # increment stack pointer     
+        # self.SP = self.SP + 1        
+        # return self.stack.extend(i)
 
     def set_file_name(self):
         """
@@ -55,7 +59,7 @@ class CodeWriter(object):
         """
         pass
 
-    def write_arithmetic(self, command):
+    def write_arithmetic(self):
         """
         Writes the assembly code that is the translation of the given
         arithmetic command
@@ -65,35 +69,34 @@ class CodeWriter(object):
 
         # theres some more clever way of doing this using the +, -, * etc symbols
         operand = {'add': lambda x: x[0]+x[1],
-                   'sub': lambda x: x[0]-x[1]}
+                   'sub': lambda x: x[0]-x[1]
+                   }
 
-        assert command.ctype == 'C_ARITHMETIC'
+        assert self.command.ctype == 'C_ARITHMETIC'
 
-        a = self.stack.pop()
-        b = self.stack.pop()
+        a = int(self.stack.pop())
+        b = int(self.stack.pop())
 
         result = operand[self.command.arg1]((a, b))
-        self.stack.push( result )
-        return self.stack[-1]
-
-    def write_push_pop(self):
-        """
-        Write the assembly code that is the translation of the given
-        command where command is either C_PUSH or C_POP
-        """
-        pass
-
-    def write_push(self, command):
-        assert command.ctype == 'C_PUSH'
+        self.stack.extend([result])
 
         asm = []
-        asm.extend(['@%s' % ( command.arg2, )] )
+        asm.extend(['@%s' % (self.SP + len(self.stack))])
+        asm.extend(['M=M+D'])
+        self.assm = '\n'.join(asm)
+
+    def write_push(self):
+        assert self.command.ctype == 'C_PUSH'
+        self.stack.extend(self.command.arg2)
+
+        asm = []
+        asm.extend(['@%s' % ( self.command.arg2, )] )
         asm.extend(["D=A"])
         asm.extend(['@%s'  % (self.SP, )])
         asm.extend(['M=D'])
         self.SP = self.SP + 1
 
-        return '\n'.join(asm)
+        self.assm = '\n'.join(asm)
 
     def close(self):
         """ Closes the output file """
@@ -101,4 +104,4 @@ class CodeWriter(object):
 
     def __repr__(self):
         attributes = ['stack', 'SP', 'command']
-        return ''.join(['%r\n' % getattr(self, _, '') for _ in attributes])
+        return ''.join(['%s:\t%r\n' % (_, getattr(self, _, ''),) for _ in attributes])
