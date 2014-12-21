@@ -18,8 +18,6 @@ function write_asm(){
     python ${SCRIPT} ${SCRIPT_ARG} > ${SCRIPT_OUT}
 }
 
-# write_asm
-echo ${SCRIPT_OUT}
-cat ${SCRIPT_OUT}
+write_asm
 ${CPU} ${TEST}
 diff -y ${TEST_OUT} ${TEST_CMP}

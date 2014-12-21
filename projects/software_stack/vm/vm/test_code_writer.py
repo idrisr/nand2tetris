@@ -37,14 +37,14 @@ class TestCodeWriter(TestCase):
         self.clear_stack()
 
         command = "push constant 7"
-        asm_command = '\n'.join(['@7', 'D=A',  '@256', 'M=D'])
+        asm_command = '\n'.join(['@7', 'D=A',  '@256', 'M=D', '@SP', 'M=M+1'])
         self.command = VMCommand(command)
         self.command.parse_command()
         self.cw.command = self.command
         self.cw.write_push()
 
         command = "push constant 8"
-        asm_command = '\n'.join(['@8', 'D=A', '@257', 'M=D'])
+        asm_command = '\n'.join(['@8', 'D=A', '@257', 'M=D', '@SP', 'M=M+1'])
         self.command = VMCommand(command)
         self.command.parse_command()
         self.cw.command = self.command
@@ -62,14 +62,14 @@ class TestCodeWriter(TestCase):
 
         # put 7 & 8 on the stack to add
         command = "push constant 7"
-        asm_command = '\n'.join(['@7', 'D=A',  '@256', 'M=D'])
+        asm_command = '\n'.join(['@7', 'D=A',  '@256', 'M=D', '@SP', 'M=M+1'])
         self.command = VMCommand(command)
         self.command.parse_command()
         self.cw.command = self.command
         self.cw.write_push()
 
         command = "push constant 8"
-        asm_command = '\n'.join(['@8', 'D=A', '@257', 'M=D'])
+        asm_command = '\n'.join(['@8', 'D=A', '@257', 'M=D', '@SP', 'M=M+1'])
         self.command = VMCommand(command)
         self.command.parse_command()
         self.cw.command = self.command

@@ -49,18 +49,6 @@ class CodeWriter(object):
         self.f = open(file_name, 'w')
         pass
 
-    # def pop(self):                       
-        # """ returns popped element off stack """
-        # # decrement stack pointer
-        # self.SP = self.SP - 1     
-        # return self.stack.pop()    
-
-    # def push(self, i):          
-        # """ push element onto stack """
-        # # increment stack pointer     
-        # self.SP = self.SP + 1        
-        # return self.stack.extend(i)
-
     def set_file_name(self):
         """
         informs the code writer that the translation of a new VM file is
@@ -88,11 +76,12 @@ class CodeWriter(object):
         self.SP_update()
 
         result = operand[self.command.arg1]((a, b))
-        self.stack.extend([result])
 
         asm = []
         asm.extend(['@%s' % (self.SP + len(self.stack))])
         asm.extend(['M=M+D'])
+        asm.extend(['@SP', 'M=M-1'])
+        self.stack.extend([result])
         self.assm = '\n'.join(asm)
 
     def write_pop(self):
@@ -107,8 +96,8 @@ class CodeWriter(object):
         asm.extend(["D=A"])
         asm.extend(['@%s'  % (self.SP, )])
         asm.extend(['M=D'])
-
         self.SP_update()
+        asm.extend(['@SP', 'M=M+1'])
         self.assm = '\n'.join(asm)
 
     def close(self):
