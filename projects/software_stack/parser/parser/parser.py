@@ -14,8 +14,8 @@ class Parser(object):
             self.file_handle = open(self.file_name, 'r')
             self.read_file()
 
-        except IOError, e:
-            print e
+        except IOError:
+            print "File not found: %s" % (self.file_name)
             sys.exit(1)
 
     def read_file(self):
@@ -42,15 +42,15 @@ class Parser(object):
         self.buff = [line.strip() for line in self.buff if not line.strip() == '']
 
     def has_more_commands(self):
-        """ 
-        Are there more commands in the input? 
+        """
+        Are there more commands in the input?
         returns Boolean
         """
         # TODO: should just pop the lines off the list instead keeping track of the index
-        return len(self.buff) > self.command_i 
+        return len(self.buff) > self.command_i
 
     def advance(self):
-        """ 
+        """
         Reads the next command from the input and makes it the current
         command.  Should be called only if hasMoreCommands is True.  Initially
         there is no current command

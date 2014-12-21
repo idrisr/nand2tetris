@@ -44,4 +44,5 @@ if __name__ == '__main__':
         dir = environ['HOME']
         file = 'learning/nand2tetris/projects/software_stack/vm/StackArithmetic/SimpleAdd/SimpleAdd.vm'
         vmfile = path.join(dir, file)
-        main(vmfile)
+
+    main(vmfile)

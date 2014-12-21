@@ -86,7 +86,3 @@ class TestCodeWriter(TestCase):
 
         l = ['@256', 'M=M+D']
         asm_command = '\n'.join(l)
-
-    def test_write_command_to_file(self):
-        pass
-
