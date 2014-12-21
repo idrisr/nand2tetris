@@ -13,11 +13,12 @@ TEST_OUT=${SOFT_HOME}/vm/StackArithmetic/SimpleAdd/SimpleAdd.out
 TEST_CMP=${SOFT_HOME}/vm/StackArithmetic/SimpleAdd/SimpleAdd.cmp
 
 function write_asm(){
+    echo 'in write asm'
     rm -f ${SCRIPT_OUT} ${TEST_OUT};
     python ${SCRIPT} ${SCRIPT_ARG} > ${SCRIPT_OUT}
 }
 
-write_asm
+# write_asm
 echo ${SCRIPT_OUT}
 cat ${SCRIPT_OUT}
 ${CPU} ${TEST}

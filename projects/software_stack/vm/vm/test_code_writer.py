@@ -23,7 +23,7 @@ class TestCodeWriter(TestCase):
 
         # need to update SP, ie RAM[0]
         command = "push constant 7"
-        asm_command = '\n'.join(['@7', 'D=A',  '@256', 'M=D'])
+        asm_command = '\n'.join(['@7', 'D=A',  '@256', 'M=D', '@SP', 'M=M+1'])
         self.command = VMCommand(command)
         self.command.parse_command()
         self.cw.command = self.command

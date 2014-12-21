@@ -31,26 +31,6 @@ Segments
     pointer
     temp
 
-// Pushes and adds two constants.
-push constant 7
-push constant 8
-add
-
-@7
-D=A
-@256
-M=D
-TODO: update SP, RAM[0]
-
-@8
-D=A
-@257
-M=D
-TODO: update SP, RAM[0]
-
-@256
-M=M+D
-
 Command Types:
     C_ARITHMETIC 
     C_PUSH       
@@ -65,3 +45,28 @@ Command Types:
 Testing:
     create the assm file from the vm file
     use the emulator and check out the output vs the expected file
+
+// push 7
+@7
+D=A
+@256
+MD=D
+
+// update stack pointer
+@SP
+M=M+1
+
+// push 8
+@8
+D=A
+@257
+MD=D
+
+// update stack pointer
+@SP
+M=M+1
+
+@256
+MD=M+D
+@SP
+M=M-1
