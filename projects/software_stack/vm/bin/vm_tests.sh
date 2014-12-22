@@ -3,21 +3,26 @@
 CPU=${HOME}'/learning/nand2tetris/tools/CPUEmulator.sh'
 PROJ_HOME=${HOME}'/learning/nand2tetris'
 SOFT_HOME=${PROJ_HOME}'/projects/software_stack'
-
+VM_HOME=${SOFT_HOME}'/vm'
 SCRIPT=${SOFT_HOME}/vm/vm/vm_parser.py
-SCRIPT_ARG=${SOFT_HOME}/vm/StackArithmetic/SimpleAdd/SimpleAdd.vm
-SCRIPT_OUT=${SOFT_HOME}/vm/StackArithmetic/SimpleAdd/SimpleAdd.asm
-
-TEST=${SOFT_HOME}/vm/StackArithmetic/SimpleAdd/SimpleAdd.tst
-TEST_OUT=${SOFT_HOME}/vm/StackArithmetic/SimpleAdd/SimpleAdd.out
-TEST_CMP=${SOFT_HOME}/vm/StackArithmetic/SimpleAdd/SimpleAdd.cmp
 
 function write_asm(){
-    echo 'in write asm'
-    rm -f ${SCRIPT_OUT} ${TEST_OUT};
-    python ${SCRIPT} ${SCRIPT_ARG} > ${SCRIPT_OUT}
+    base=${VM_HOME}/$1/$2/$2
+    echo ${base}
+    python ${SCRIPT} ${base}.vm > ${base}.asm
 }
 
-write_asm
-${CPU} ${TEST}
-diff -y ${TEST_OUT} ${TEST_CMP}
+function emulator(){
+    base=${VM_HOME}/$1/$2/$2
+    ${CPU} ${base}.tst
+    diff -yb ${base}.cmp ${base}.out | head
+}
+
+echo 'comparing simpleadd'
+write_asm StackArithmetic SimpleAdd
+emulator  StackArithmetic SimpleAdd
+
+echo ''
+echo 'comparing Equal Test'
+#write_asm StackArithmetic EqTest
+emulator  StackArithmetic EqTest
