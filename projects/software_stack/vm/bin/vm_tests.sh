@@ -17,7 +17,7 @@ function emulator(){
     rm -f ${base}.out
     ${CPU} ${base}.tst
     #echo "diffing ${base}.cmp and ${base}.out"
-    diff -yb ${base}.cmp ${base}.out | head
+    diff -yb --suppress-common-lines ${base}.cmp ${base}.out | head
 }
 
 function run_test(){
@@ -27,10 +27,17 @@ function run_test(){
     emulator  $1 $2
 }
 
-echo ''
 echo 'comparing SimpleAdd Test'
 run_test StackArithmetic SimpleAdd
 
-echo ''
-echo 'comparing Equal Test'
+echo 'comparing SimpleAdd2 Test'
+run_test StackArithmetic SimpleAdd2
+
+echo 'comparing SimpleAdd EqTest'
 run_test StackArithmetic EqTest
+
+echo 'comparing SimpleAdd NegTest'
+run_test StackArithmetic NegTest
+
+echo 'comparing Stack Arithmetic Test'
+run_test StackArithmetic StackTest

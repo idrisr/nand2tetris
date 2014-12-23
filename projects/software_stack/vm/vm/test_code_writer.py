@@ -93,9 +93,23 @@ class TestCodeWriter(TestCase):
         self.cw.write_arithmetic()
         # self.assertEqual(self.cw.stack[-1], -1, self.cw)
 
-        assm_command = ['@257', 'D=M',
-              '@256' , 'D=M-D' , '@L0'  , 'D;JEQ' , '@L1'  , '(L1)' ,
-            '@256'   , 'M=0'   , '@L2'  , '0;JMP' , '(L0)' , '@256'   , 'M=-1' ,
-            '@L2'  , '0;JMP' , '(L2)' , '@SP'   , 'M=M-1']
+        assm_command = [
+    '@257' , 'D=M'   , '@256' , 'D=M-D' , '@L0'    , 'D;JEQ' , '@L1'  , '(L1)' ,
+    '@256' , 'M=0'   , '@L2'  , '0;JMP' , '(L0)'   , '@256'  , 'M=-1' ,
+    '@L2'  , '0;JMP' , '(L2)' , '@SP'   , 'M=M-1']
 
+        self.assertListEqual(assm_command, self.cw.assm)
+
+    def test_neg(self):
+        """ test taking negative of top item on stack """
+        self.clear_stack()
+        self.cw.stack.append(10)
+        self.cw.SP_update()
+
+        command = 'neg'
+        self.command = VMCommand(command)
+        self.command.parse_command()
+        self.cw.command = self.command
+        self.cw.write_arithmetic()
+        assm_command = ['@SP', 'A=M-1', 'M=-M']
         self.assertListEqual(assm_command, self.cw.assm)

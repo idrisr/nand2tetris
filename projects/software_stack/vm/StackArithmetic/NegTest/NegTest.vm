@@ -5,26 +5,6 @@
 
 // Executes a sequence of arithmetic and logical operations
 // on the stack. 
+
 push constant 16
-push constant 16
-eq
-
-push constant 17
-push constant 16
-eq
-
-push constant 17
-push constant 18
-eq
-
-push constant 1000
-push constant 1000
-eq
-
-push constant 1
-push constant 2
-lt
-
-push constant 1
-push constant 2
-gt
+neg

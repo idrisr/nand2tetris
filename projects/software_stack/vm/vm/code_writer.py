@@ -69,44 +69,46 @@ class CodeWriter(object):
         # theres some more clever way of doing this using the +, -, * etc symbols
         assert self.command.ctype == 'C_ARITHMETIC'
 
-        assm = []
+        bool_map = {1:-1, 0:0}
+        # these bool ops are not doing bitwise ops. Therefore not same as assm
+        operand = {'add': (lambda x: x[0]+x[1], '+'),
+                   'sub': (lambda x: x[0]-x[1], '-'), 
+                   'and': (lambda x: int(x[0] and x[1]), '&'),
+                   'or' : (lambda x: int(x[0] or x[1]), '|'),
+                   'eq' : ('JEQ', lambda x : bool_map[x[0]==x[1]]),
+                   'lt' : ('JLT', lambda x : bool_map[x[0]< x[1]]),
+                   'gt' : ('JGT', lambda x : bool_map[x[0]> x[1]]),
+                   'neg': (lambda x: -x, '-'),
+                   'not': (lambda x: not x, '!')
+                   }
 
-        # only for add
-        if self.command.arg1 in {'add', 'sub', 'and', 'or'}:
-            operand = {'add': (lambda x: x[0]+x[1], '+'),
-                       'sub': (lambda x: x[0]-x[1], '-'), 
-                       'and': (lambda x: int(x[0] and x[1]), '&'),
-                       'or' : (lambda x: int(x[0] or x[1]), '|')
-                       }
+        self.assm = []
 
+        if self.command.arg1 in {'neg', 'not'}:
+            a = int(self.stack.pop())
+            operand_func, operand_sym = operand[self.command.arg1]
+
+            self.SP_update()
+            self.assm.extend(['@SP', 'A=M-1', 'M=%sM' % (operand_sym, )])
+            result = operand_func(a)
+
+        elif self.command.arg1 in {'add', 'sub', 'and', 'or'}:
+            # import pdb; pdb.set_trace()
             a = int(self.stack.pop())
             b = int(self.stack.pop())
             self.SP_update()
 
-            assm.extend(['@%s' % (self.SP + len(self.stack))])
+            self.assm.extend(['@%s' % self.SP ])
             operand_func, operand_sym = operand[self.command.arg1]
 
-            assm.extend(['M=M%sD' % (operand_sym, )])
-            assm.extend(['@SP', 'M=M-1'])
+            self.assm.extend(['M=M%sD' % (operand_sym, )])
+            self.assm.extend(['@SP', 'M=M-1'])
 
             result = operand_func((a, b))
-            self.stack.extend([result])
-            self.assm = assm
 
         elif self.command.arg1 in {'eq', 'lt', 'gt'}:
-
-            # return -1 if true, 0 if false. matches ASM spec
-            bool_dict = {1:-1, 0:0}
-            operand = { 'eq' : ('JEQ', lambda x : bool_dict[x[0]==x[1]]),
-                        'lt' : ('JLT', lambda x : bool_dict[x[0]< x[1]]),
-                        'gt' : ('JGT', lambda x : bool_dict[x[0]> x[1]])
-                       }
-
-            # import pdb; pdb.set_trace()
-            assm = []
-
-            assm.extend(['@%s' % (self.SP-1)])
-            assm.extend(['D=M']) # TODO: put this into write_pop
+            self.assm.extend(['@%s' % (self.SP-1)])
+            self.assm.extend(['D=M']) # TODO: put this into write_pop
 
             a = self.stack.pop()
             b = self.stack.pop()
@@ -122,35 +124,33 @@ class CodeWriter(object):
             self.label = self.label + 3
 
             # calc D jump condition
-            assm.extend(['@%s' % self.SP])
-            assm.extend(['D=M-D'])
+            self.assm.extend(['@%s' % self.SP])
+            self.assm.extend(['D=M-D'])
 
             # jump
-            assm.extend(['@L%s' % label_true])
-            assm.extend(['D;%s' % jmp_op])
-            assm.extend(['@L%s' % label_false])
+            self.assm.extend(['@L%s' % label_true])
+            self.assm.extend(['D;%s' % jmp_op])
+            self.assm.extend(['@L%s' % label_false])
 
             # false
-            assm.extend(['(L%s)' % label_false])
-            assm.extend(['@%s' % self.SP])
-            assm.extend(['M=0'])
-            assm.extend(['@L%s' % label_cont])
-            assm.extend(['0;JMP'])
+            self.assm.extend(['(L%s)' % label_false])
+            self.assm.extend(['@%s' % self.SP])
+            self.assm.extend(['M=0'])
+            self.assm.extend(['@L%s' % label_cont])
+            self.assm.extend(['0;JMP'])
 
             # true
-            assm.extend(['(L%s)' % label_true])
-            assm.extend(['@%s' % self.SP])
-            assm.extend(['M=-1'])
-            assm.extend(['@L%s' % label_cont])
-            assm.extend(['0;JMP'])
+            self.assm.extend(['(L%s)' % label_true])
+            self.assm.extend(['@%s' % self.SP])
+            self.assm.extend(['M=-1'])
+            self.assm.extend(['@L%s' % label_cont])
+            self.assm.extend(['0;JMP'])
 
             # continue
-            assm.extend(['(L%s)' % label_cont])
-            assm.extend(['@SP'])
-            assm.extend(['M=M-1'])
-            # pdb.set_trace()
+            self.assm.extend(['(L%s)' % label_cont])
+            self.assm.extend(['@SP'])
+            self.assm.extend(['M=M-1'])
 
-        self.assm = assm
         self.stack.extend([result])
         self.SP_update()
 
@@ -161,7 +161,6 @@ class CodeWriter(object):
         print 'write pop'
 
     def write_push(self):
-        # import pdb; pdb.set_trace()
         assert self.command.ctype == 'C_PUSH'
         self.stack.extend([self.command.arg2])
 
