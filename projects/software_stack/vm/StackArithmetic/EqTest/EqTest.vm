@@ -20,3 +20,11 @@ eq
 push constant 1000
 push constant 1000
 eq
+
+push constant 1
+push constant 2
+lt
+
+push constant 1
+push constant 2
+gt
