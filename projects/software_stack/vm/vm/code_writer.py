@@ -89,7 +89,7 @@ class CodeWriter(object):
             operand_func, operand_sym = operand[self.command.arg1]
 
             self.SP_update()
-            self.assm.extend(['@SP', 'A=M-1', 'M=%sM' % (operand_sym, )])
+            self.assm.extend(['@SP', 'A=M-1', 'MD=%sM' % (operand_sym, )])
             result = operand_func(a)
 
         elif self.command.arg1 in {'add', 'sub', 'and', 'or'}:
