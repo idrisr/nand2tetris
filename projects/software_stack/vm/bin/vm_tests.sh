@@ -39,5 +39,8 @@ run_test StackArithmetic EqTest
 echo 'comparing SimpleAdd NegTest'
 run_test StackArithmetic NegTest
 
+echo 'comparing SimpleAdd AndTest'
+run_test StackArithmetic AndTest
+
 echo 'comparing Stack Arithmetic Test'
 run_test StackArithmetic StackTest

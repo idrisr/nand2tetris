@@ -6,5 +6,7 @@
 // Executes a sequence of arithmetic and logical operations
 // on the stack. 
 
+push constant 42
 push constant 16
 neg
+not

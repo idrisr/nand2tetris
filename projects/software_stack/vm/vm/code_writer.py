@@ -66,20 +66,18 @@ class CodeWriter(object):
         # pop top two items off of the stack
         # do the proper arithmetic operand
 
-        # theres some more clever way of doing this using the +, -, * etc symbols
         assert self.command.ctype == 'C_ARITHMETIC'
 
         bool_map = {1:-1, 0:0}
-        # these bool ops are not doing bitwise ops. Therefore not same as assm
-        operand = {'add': (lambda x: x[0]+x[1], '+'),
-                   'sub': (lambda x: x[0]-x[1], '-'), 
-                   'and': (lambda x: int(x[0] and x[1]), '&'),
-                   'or' : (lambda x: int(x[0] or x[1]), '|'),
+        operand = {'add': (lambda x: x[0] + x[1], '+'),
+                   'sub': (lambda x: x[0] - x[1], '-'),
+                   'and': (lambda x: x[0] & x[1], '&'),
+                   'or' : (lambda x: x[0] | x[1], '|'),
                    'eq' : ('JEQ', lambda x : bool_map[x[0]==x[1]]),
                    'lt' : ('JLT', lambda x : bool_map[x[0]< x[1]]),
                    'gt' : ('JGT', lambda x : bool_map[x[0]> x[1]]),
                    'neg': (lambda x: -x, '-'),
-                   'not': (lambda x: not x, '!')
+                   'not': (lambda x: ~x, '!')
                    }
 
         self.assm = []
@@ -93,7 +91,6 @@ class CodeWriter(object):
             result = operand_func(a)
 
         elif self.command.arg1 in {'add', 'sub', 'and', 'or'}:
-            # import pdb; pdb.set_trace()
             a = int(self.stack.pop())
             b = int(self.stack.pop())
             self.SP_update()
@@ -104,7 +101,7 @@ class CodeWriter(object):
             self.assm.extend(['M=M%sD' % (operand_sym, )])
             self.assm.extend(['@SP', 'M=M-1'])
 
-            result = operand_func((a, b))
+            result = operand_func((b, a))
 
         elif self.command.arg1 in {'eq', 'lt', 'gt'}:
             self.assm.extend(['@%s' % (self.SP-1)])
