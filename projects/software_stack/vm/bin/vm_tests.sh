@@ -8,21 +8,29 @@ SCRIPT=${SOFT_HOME}/vm/vm/vm_parser.py
 
 function write_asm(){
     base=${VM_HOME}/$1/$2/$2
-    echo ${base}
+    rm -f ${base}.asm
     python ${SCRIPT} ${base}.vm > ${base}.asm
 }
 
 function emulator(){
     base=${VM_HOME}/$1/$2/$2
+    rm -f ${base}.out
     ${CPU} ${base}.tst
+    #echo "diffing ${base}.cmp and ${base}.out"
     diff -yb ${base}.cmp ${base}.out | head
 }
 
-echo 'comparing simpleadd'
-write_asm StackArithmetic SimpleAdd
-emulator  StackArithmetic SimpleAdd
+function run_test(){
+    echo ''
+    echo "comparing $1 $2"
+    write_asm $1 $2
+    emulator  $1 $2
+}
+
+echo ''
+echo 'comparing SimpleAdd Test'
+run_test StackArithmetic SimpleAdd
 
 echo ''
 echo 'comparing Equal Test'
-#write_asm StackArithmetic EqTest
-emulator  StackArithmetic EqTest
+run_test StackArithmetic EqTest

@@ -23,12 +23,12 @@ class TestCodeWriter(TestCase):
 
         # need to update SP, ie RAM[0]
         command = "push constant 7"
-        asm_command = '\n'.join(['@7', 'D=A',  '@256', 'M=D', '@SP', 'M=M+1'])
+        asm_command = ['@7', 'D=A',  '@256', 'M=D', '@SP', 'M=M+1']
         self.command = VMCommand(command)
         self.command.parse_command()
         self.cw.command = self.command
         self.cw.write_push()
-        self.assertEqual(asm_command, self.cw.assm)
+        self.assertListEqual(asm_command, self.cw.assm)
 
     def test_write_two_push_constant(self):
         """ push contant [0-9]* twice in a row"""
@@ -37,14 +37,15 @@ class TestCodeWriter(TestCase):
         self.clear_stack()
 
         command = "push constant 7"
-        asm_command = '\n'.join(['@7', 'D=A',  '@256', 'M=D', '@SP', 'M=M+1'])
+        asm_command = ['@7', 'D=A',  '@256', 'M=D', '@SP', 'M=M+1']
         self.command = VMCommand(command)
         self.command.parse_command()
         self.cw.command = self.command
         self.cw.write_push()
+        self.assertEqual(asm_command, self.cw.assm)
 
         command = "push constant 8"
-        asm_command = '\n'.join(['@8', 'D=A', '@257', 'M=D', '@SP', 'M=M+1'])
+        asm_command = ['@8', 'D=A', '@257', 'M=D', '@SP', 'M=M+1']
         self.command = VMCommand(command)
         self.command.parse_command()
         self.cw.command = self.command
@@ -52,37 +53,49 @@ class TestCodeWriter(TestCase):
         self.assertEqual(asm_command, self.cw.assm)
 
     def test_write_add_command(self):
-        """ 
+        """
         test popping top two items off of stack, adding them, and putting
-        the result back on the stack 
+        the result back on the stack
         """
 
         # empty stack
         self.clear_stack()
 
         # put 7 & 8 on the stack to add
-        command = "push constant 7"
-        asm_command = '\n'.join(['@7', 'D=A',  '@256', 'M=D', '@SP', 'M=M+1'])
-        self.command = VMCommand(command)
-        self.command.parse_command()
-        self.cw.command = self.command
-        self.cw.write_push()
-
-        command = "push constant 8"
-        asm_command = '\n'.join(['@8', 'D=A', '@257', 'M=D', '@SP', 'M=M+1'])
-        self.command = VMCommand(command)
-        self.command.parse_command()
-        self.cw.command = self.command
-        self.cw.write_push()
-        self.assertEqual(asm_command, self.cw.assm)
+        self.cw.stack.append(7)
+        self.cw.stack.append(8)
 
         command = "add"
         self.command = VMCommand(command)
         self.command.parse_command()
-        # thisll be set in CodeWriter.process_command()
         self.cw.command = self.command
         self.cw.write_arithmetic()
         self.assertEqual(self.cw.stack[-1], 15, self.cw)
 
-        l = ['@256', 'M=M+D']
-        asm_command = '\n'.join(l)
+        assm_command = ['@256', 'M=M+D', '@SP', 'M=M-1']
+        self.assertListEqual(assm_command, self.cw.assm)
+
+
+    def test_write_arithmetic_eq(self):
+        """ test eq """
+        # empty stack
+        self.clear_stack()
+
+        # put 7 & 8 on the stack to add
+        self.cw.stack.append(20)
+        self.cw.stack.append(20)
+        self.cw.SP_update()
+
+        command = "eq"
+        self.command = VMCommand(command)
+        self.command.parse_command()
+        self.cw.command = self.command
+        self.cw.write_arithmetic()
+        # self.assertEqual(self.cw.stack[-1], -1, self.cw)
+
+        assm_command = ['@257', 'D=M',
+              '@256' , 'D=M-D' , '@L0'  , 'D;JEQ' , '@L1'  , '(L1)' ,
+            '@256'   , 'M=0'   , '@L2'  , '0;JMP' , '(L0)' , '@256'   , 'M=-1' ,
+            '@L2'  , '0;JMP' , '(L2)' , '@SP'   , 'M=M-1']
+
+        self.assertListEqual(assm_command, self.cw.assm)
