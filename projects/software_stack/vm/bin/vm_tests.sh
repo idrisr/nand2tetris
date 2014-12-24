@@ -44,3 +44,6 @@ run_test StackArithmetic AndTest
 
 echo 'comparing Stack Arithmetic Test'
 run_test StackArithmetic StackTest
+
+echo 'comparing Very Basic Memory Test'
+emulator MemoryAccess VeryBasicTest

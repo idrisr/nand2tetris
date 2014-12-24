@@ -30,19 +30,19 @@ class SP(Stack):
 class LCL(Stack):
     def __init__(self):
         self.base_address = 52
-        super(SP, self).__init__()
+        super(LCL, self).__init__()
 
 class ARG(Stack):
     def __init__(self):
         self.base_address = 0 
-        super(SP, self).__init__()
+        super(ARG, self).__init__()
 
 class THIS(Stack):
     def __init__(self):
         self.base_address = 0 
-        super(SP, self).__init__()
+        super(THIS, self).__init__()
 
 class THAT(Stack):
     def __init__(self):
         self.base_address = 0 
-        super(SP, self).__init__()
+        super(THAT, self).__init__()

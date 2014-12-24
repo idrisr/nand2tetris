@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from stack import SP
+from stack import SP, LCL, ARG, THIS, THAT
 
 class CodeWriter(object):
     """
@@ -13,8 +13,11 @@ class CodeWriter(object):
     def __init__(self):
         """ opens the output file/stream and gets ready to write into it """
         self.sp = SP()
+        self.lcl = LCL()
+        self.arg = ARG()
+        self.THIS = THIS()
+        self.THAT = THAT()
         self.label = 0
-
 
     def process_command(self, command):
         """ call proper methods of this class based on the command type """
@@ -24,6 +27,7 @@ class CodeWriter(object):
             'C_ARITHMETIC' : self.write_arithmetic,
             'C_PUSH'       : self.write_push,
             'C_POP'        : self.write_pop,
+            # TODO: labelling is done ad-hoc already in write_arithmetic. Factor it out
             'C_LABEL'      : lambda x: x,
             'C_GOTO'       : lambda x: x,
             'C_IF'         : lambda x: x,

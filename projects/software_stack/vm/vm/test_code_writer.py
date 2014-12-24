@@ -3,7 +3,6 @@
 from unittest import TestCase
 from code_writer import CodeWriter
 from vm_command import VMCommand
-from stack import SP
 
 class TestCodeWriter(TestCase):
     def setUp(self):
@@ -109,3 +108,11 @@ class TestCodeWriter(TestCase):
         self.cw.write_arithmetic()
         assm_command = ['@SP', 'A=M-1', 'MD=-M']
         self.assertListEqual(assm_command, self.cw.assm)
+
+    def test_pop_to_diff_stack(self):
+        self.cw.sp.push(10)
+        command = 'pop local 0'
+        self.command = VMCommand(command)
+        self.command.parse_command()
+        self.cw.command = self.command
+        self.cw.write_arithmetic()
