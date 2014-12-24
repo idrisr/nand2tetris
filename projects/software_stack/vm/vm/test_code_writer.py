@@ -21,7 +21,7 @@ class TestCodeWriter(TestCase):
         # need to update SP, ie RAM[0]
         asm_command = ['@7', 'D=A', '@SP', 'A=M', 'M=D', '@SP', 'M=M+1']
 
-        command = VMCommand('push contant 7')
+        command = VMCommand('push constant 7')
         command.parse_command()
         self.cw.process_command(command)
         self.assertListEqual(asm_command, self.cw.assm)
@@ -81,9 +81,10 @@ class TestCodeWriter(TestCase):
         self.assertEqual(self.cw.sp.stack[-1], -1, self.cw)
 
         assm_command = [
-    '@257' , 'D=M'   , '@256' , 'D=M-D' , '@L0'    , 'D;JEQ' , '@L1'  , '(L1)' ,
-    '@256' , 'M=0'   , '@L2'  , '0;JMP' , '(L0)'   , '@256'  , 'M=-1' ,
-    '@L2'  , '0;JMP' , '(L2)' , '@SP'   , 'M=M-1']
+        '@257' , 'D=M'  , '@256'  , 'D=M-D' , '@L0'   , 'D;JEQ' , '@L1'  ,
+        '(L1)' , '@256' , 'M=0'   , '@L2'   , '0;JMP' , '(L0)'  , '@256' ,
+        'M=-1' , '@L2'  , '0;JMP' , '(L2)'  , '@SP'   , 'M=M-1'
+        ]
 
         self.assertListEqual(assm_command, self.cw.assm)
 
@@ -98,10 +99,17 @@ class TestCodeWriter(TestCase):
         assm_command = ['@SP', 'A=M-1', 'MD=-M']
         self.assertListEqual(assm_command, self.cw.assm)
 
-    # def test_pop_to_diff_stack(self):
-        # self.cw.sp.push(10)
-        # command = 'pop local 0'
-        # self.command = VMCommand(command)
-        # self.command.parse_command()
-        # self.cw.command = self.command
-        # self.cw.process_command()
+
+    def test_pop_to_diff_stack(self):
+        # push ten onto global stack
+        self.cw.sp.push(10)
+
+        # pop it off and it goes into local
+        command = VMCommand('pop local 0')
+        command.parse_command()
+        self.cw.process_command(command)
+
+        assm_command = ['@SP', 'A=M-1', 'D=M', '@LCL', 'A=M ', 'M=D', '@LCL',
+                'M=M+1', '@SP', 'M=M-1']
+
+        self.assertListEqual(assm_command, self.cw.assm)

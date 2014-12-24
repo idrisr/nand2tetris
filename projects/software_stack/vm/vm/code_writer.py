@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from stack import SP, LCL, ARG, THIS, THAT
+import pdb
 
 class CodeWriter(object):
     """
@@ -27,8 +28,8 @@ class CodeWriter(object):
             'C_ARITHMETIC' : self.write_arithmetic,
             'C_PUSH'       : self.write_push,
             'C_POP'        : self.write_pop,
-            # TODO: labelling is done ad-hoc already in write_arithmetic. Factor
-            # it out
+            # TODO: labelling is done ad-hoc already in write_arithmetic.
+            # Factor hit out
             'C_LABEL'      : lambda x: x,
             'C_GOTO'       : lambda x: x,
             'C_IF'         : lambda x: x,
@@ -79,6 +80,8 @@ class CodeWriter(object):
                    'not': (lambda x: ~x, '!')
                    }
 
+
+        # TODO: Probably the VMCommand should have the `assm` attribute
         self.assm = []
 
         if self.command.arg1 in {'neg', 'not'}:
@@ -150,16 +153,43 @@ class CodeWriter(object):
         self.label = self.label + 1
 
     def write_pop(self):
-        print 'write pop'
+        """ to pop things off the global stack onto other segments """
+        seg_map = {
+            'argument' : 'ARG',
+            'local'    : 'LCL',
+            'pointer'  : '',
+            'static'   : '',
+            'temp'     : '',
+            'that'     : 'THAT',
+            'this'     : 'THIS'
+        }
+
+        # pdb.set_trace()
+        assert self.command.ctype == 'C_POP'
+
+        segment = seg_map[self.command.arg1]
+        self.assm = [] # TODO:do this in process_command instead of repeating
+        # TODO: make this work for non zero destination
+        self.assm.extend(['@SP'])
+        self.assm.extend(['A=M-1'])
+        self.assm.extend(['D=M'])
+        self.assm.extend(['@%s' % segment])
+        self.assm.extend(['A=M '])
+        self.assm.extend(['M=D'])
+        self.assm.extend(['@%s' % segment])
+        self.assm.extend(['M=M+1'])
+        self.assm.extend(['@SP'])
+        self.assm.extend(['M=M-1'])
+
 
     def write_push(self):
+        # TODO: this only works for constant now. Fix.
         assert self.command.ctype == 'C_PUSH'
         self.sp.push(self.command.arg2)
-
         self.assm = []
 
         self.assm.extend(['@%s' % ( self.command.arg2, )] )
-        self.assm.extend(["D=A"]) 
+        self.assm.extend(["D=A"])
         self.assm.extend(["@SP"]) # can replace with whichever stack
         self.assm.extend(["A=M"])
         self.assm.extend(["M=D"])

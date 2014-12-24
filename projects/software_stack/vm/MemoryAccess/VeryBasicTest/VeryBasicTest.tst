@@ -3,7 +3,8 @@
 // by Nisan and Schocken, MIT Press.
 // File name: projects/07/MemoryAccess/VeryBasicTest/VeryBasicTest.tst
 
-load VeryBasicTestManual.asm,
+// load VeryBasicTestManual.asm,
+load VeryBasicTest.asm,
 output-file VeryBasicTest.out,
 compare-to VeryBasicTest.cmp,
 //          SP            LCL           @SP-1           @LCL-1
