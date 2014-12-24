@@ -31,6 +31,20 @@ Segments
     pointer
     temp
 
+/////////////////
+     14 constant
+      6 static
+      6 add
+      5 this
+      5 that
+      4 sub
+      4 pointer
+      3 argument
+      3
+      2 temp
+      2 local
+/////////////////
+
 Command Types:
     C_ARITHMETIC
     C_PUSH
@@ -94,3 +108,4 @@ first argument in binary op is the bottom element on stack
 
 
 First comp
+
