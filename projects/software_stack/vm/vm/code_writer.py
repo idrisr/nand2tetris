@@ -4,10 +4,10 @@ from stack import SP, LCL, ARG, THIS, THAT
 
 class CodeWriter(object):
     """
-        I feel this object should simply take a command and return its assm equivalent
-        Most likely the VMParser objet will have a CodeWriter
-        currently CodeWriter holds the state of the stack and other memory segments
-        I might break this out into another class
+        I feel this object should simply take a command and return its assm
+        equivalent Most likely the VMParser objet will have a CodeWriter
+        currently CodeWriter holds the state of the stack and other memory
+        segments I might break this out into another class
     """
 
     def __init__(self):
@@ -27,7 +27,8 @@ class CodeWriter(object):
             'C_ARITHMETIC' : self.write_arithmetic,
             'C_PUSH'       : self.write_push,
             'C_POP'        : self.write_pop,
-            # TODO: labelling is done ad-hoc already in write_arithmetic. Factor it out
+            # TODO: labelling is done ad-hoc already in write_arithmetic. Factor
+            # it out
             'C_LABEL'      : lambda x: x,
             'C_GOTO'       : lambda x: x,
             'C_IF'         : lambda x: x,
@@ -156,12 +157,14 @@ class CodeWriter(object):
         self.sp.push(self.command.arg2)
 
         self.assm = []
-        self.assm.extend(['@%s' % ( self.command.arg2, )] )
-        self.assm.extend(["D=A"])
-        self.assm.extend(['@%s'  % (self.sp.location - 1, )])
-        self.assm.extend(['M=D'])
 
-        self.assm.extend(['@SP', 'M=M+1'])
+        self.assm.extend(['@%s' % ( self.command.arg2, )] )
+        self.assm.extend(["D=A"]) 
+        self.assm.extend(["@SP"]) # can replace with whichever stack
+        self.assm.extend(["A=M"])
+        self.assm.extend(["M=D"])
+        self.assm.extend(['@SP'])
+        self.assm.extend(['M=M+1'])
 
     def close(self):
         """ Closes the output file """
@@ -169,4 +172,5 @@ class CodeWriter(object):
 
     def __repr__(self):
         attributes = ['stack', 'SP', 'command']
-        return ''.join(['%s:\t%r\n' % (_, getattr(self, _, ''),) for _ in attributes])
+        return ''.join(['%s:\t%r\n' % (_, getattr(self, _, ''),) for _ in
+            attributes])

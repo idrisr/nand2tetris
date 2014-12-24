@@ -19,12 +19,11 @@ class TestCodeWriter(TestCase):
         self.clear_stack()
 
         # need to update SP, ie RAM[0]
-        command = "push constant 7"
-        asm_command = ['@7', 'D=A',  '@256', 'M=D', '@SP', 'M=M+1']
-        self.command = VMCommand(command)
-        self.command.parse_command()
-        self.cw.command = self.command
-        self.cw.write_push()
+        asm_command = ['@7', 'D=A', '@SP', 'A=M', 'M=D', '@SP', 'M=M+1']
+
+        command = VMCommand('push contant 7')
+        command.parse_command()
+        self.cw.process_command(command)
         self.assertListEqual(asm_command, self.cw.assm)
 
     def test_write_two_push_constant(self):
@@ -33,20 +32,16 @@ class TestCodeWriter(TestCase):
         # empty stack
         self.clear_stack()
 
-        command = "push constant 7"
-        asm_command = ['@7', 'D=A',  '@256', 'M=D', '@SP', 'M=M+1']
-        self.command = VMCommand(command)
-        self.command.parse_command()
-        self.cw.command = self.command
-        self.cw.write_push()
+        asm_command = ['@7', 'D=A', '@SP', 'A=M', 'M=D', '@SP', 'M=M+1']
+        command = VMCommand('push constant 7')
+        command.parse_command()
+        self.cw.process_command(command)
         self.assertEqual(asm_command, self.cw.assm)
 
-        command = "push constant 8"
-        asm_command = ['@8', 'D=A', '@257', 'M=D', '@SP', 'M=M+1']
-        self.command = VMCommand(command)
-        self.command.parse_command()
-        self.cw.command = self.command
-        self.cw.write_push()
+        command = VMCommand('push constant 8')
+        command.parse_command()
+        self.cw.process_command(command)
+        asm_command = ['@8', 'D=A', '@SP', 'A=M', 'M=D', '@SP', 'M=M+1']
         self.assertEqual(asm_command, self.cw.assm)
 
     def test_write_add_command(self):
@@ -62,13 +57,11 @@ class TestCodeWriter(TestCase):
         self.cw.sp.push(7)
         self.cw.sp.push(8)
 
-        command = "add"
-        self.command = VMCommand(command)
-        self.command.parse_command()
-        self.cw.command = self.command
-        self.cw.write_arithmetic()
-        self.assertEqual(self.cw.sp.stack[-1], 15, self.cw)
+        command = VMCommand('add')
+        command.parse_command()
+        self.cw.process_command(command)
 
+        self.assertEqual(self.cw.sp.stack[-1], 15, self.cw)
         assm_command = ['@256', 'M=M+D', '@SP', 'M=M-1']
         self.assertListEqual(assm_command, self.cw.assm)
 
@@ -82,12 +75,10 @@ class TestCodeWriter(TestCase):
         self.cw.sp.push(20)
         self.cw.sp.push(20)
 
-        command = "eq"
-        self.command = VMCommand(command)
-        self.command.parse_command()
-        self.cw.command = self.command
-        self.cw.write_arithmetic()
-        # self.assertEqual(self.cw.stack[-1], -1, self.cw)
+        command = VMCommand('eq')
+        command.parse_command()
+        self.cw.process_command(command)
+        self.assertEqual(self.cw.sp.stack[-1], -1, self.cw)
 
         assm_command = [
     '@257' , 'D=M'   , '@256' , 'D=M-D' , '@L0'    , 'D;JEQ' , '@L1'  , '(L1)' ,
@@ -101,18 +92,16 @@ class TestCodeWriter(TestCase):
         self.clear_stack()
         self.cw.sp.push(10)
 
-        command = 'neg'
-        self.command = VMCommand(command)
-        self.command.parse_command()
-        self.cw.command = self.command
-        self.cw.write_arithmetic()
+        command = VMCommand('neg')
+        command.parse_command()
+        self.cw.process_command(command)
         assm_command = ['@SP', 'A=M-1', 'MD=-M']
         self.assertListEqual(assm_command, self.cw.assm)
 
-    def test_pop_to_diff_stack(self):
-        self.cw.sp.push(10)
-        command = 'pop local 0'
-        self.command = VMCommand(command)
-        self.command.parse_command()
-        self.cw.command = self.command
-        self.cw.write_arithmetic()
+    # def test_pop_to_diff_stack(self):
+        # self.cw.sp.push(10)
+        # command = 'pop local 0'
+        # self.command = VMCommand(command)
+        # self.command.parse_command()
+        # self.cw.command = self.command
+        # self.cw.process_command()
