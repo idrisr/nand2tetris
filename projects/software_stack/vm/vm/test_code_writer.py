@@ -3,13 +3,11 @@
 from unittest import TestCase
 from code_writer import CodeWriter
 from vm_command import VMCommand
+from stack import SP
 
 class TestCodeWriter(TestCase):
     def setUp(self):
         self.cw = CodeWriter()
-        self.cw.stack = [1, 2, 'idris', 'unbuckled', 'chapal']
-        for _ in self.cw.stack:
-            self.cw.SP+=1
 
     def clear_stack(self):
         self.cw.stack = []
@@ -62,15 +60,15 @@ class TestCodeWriter(TestCase):
         self.clear_stack()
 
         # put 7 & 8 on the stack to add
-        self.cw.stack.append(7)
-        self.cw.stack.append(8)
+        self.cw.sp.push(7)
+        self.cw.sp.push(8)
 
         command = "add"
         self.command = VMCommand(command)
         self.command.parse_command()
         self.cw.command = self.command
         self.cw.write_arithmetic()
-        self.assertEqual(self.cw.stack[-1], 15, self.cw)
+        self.assertEqual(self.cw.sp.stack[-1], 15, self.cw)
 
         assm_command = ['@256', 'M=M+D', '@SP', 'M=M-1']
         self.assertListEqual(assm_command, self.cw.assm)
@@ -82,9 +80,8 @@ class TestCodeWriter(TestCase):
         self.clear_stack()
 
         # put 7 & 8 on the stack to add
-        self.cw.stack.append(20)
-        self.cw.stack.append(20)
-        self.cw.SP_update()
+        self.cw.sp.push(20)
+        self.cw.sp.push(20)
 
         command = "eq"
         self.command = VMCommand(command)
@@ -103,8 +100,7 @@ class TestCodeWriter(TestCase):
     def test_neg(self):
         """ test taking negative of top item on stack """
         self.clear_stack()
-        self.cw.stack.append(10)
-        self.cw.SP_update()
+        self.cw.sp.push(10)
 
         command = 'neg'
         self.command = VMCommand(command)

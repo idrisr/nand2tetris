@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+from stack import SP
+
 class CodeWriter(object):
     """
         I feel this object should simply take a command and return its assm equivalent
@@ -10,17 +12,9 @@ class CodeWriter(object):
 
     def __init__(self):
         """ opens the output file/stream and gets ready to write into it """
-        self.stack = []
+        self.sp = SP()
         self.label = 0
 
-        # dont really need to keep track of SP. Can calc it by 256 + len(self.stack)
-        # of course this requires constantly measuing the lenght of the list
-        # but does it really matter?
-        self.SP_update()
-
-    def SP_update(self):
-        # SP points to next avaiable spot
-        self.SP = 256 + len(self.stack)
 
     def process_command(self, command):
         """ call proper methods of this class based on the command type """
@@ -83,19 +77,17 @@ class CodeWriter(object):
         self.assm = []
 
         if self.command.arg1 in {'neg', 'not'}:
-            a = int(self.stack.pop())
+            a = int(self.sp.pop())
             operand_func, operand_sym = operand[self.command.arg1]
 
-            self.SP_update()
             self.assm.extend(['@SP', 'A=M-1', 'MD=%sM' % (operand_sym, )])
             result = operand_func(a)
 
         elif self.command.arg1 in {'add', 'sub', 'and', 'or'}:
-            a = int(self.stack.pop())
-            b = int(self.stack.pop())
-            self.SP_update()
+            a = self.sp.pop()
+            b = self.sp.pop()
 
-            self.assm.extend(['@%s' % self.SP ])
+            self.assm.extend(['@%s' % self.sp.location ])
             operand_func, operand_sym = operand[self.command.arg1]
 
             self.assm.extend(['M=M%sD' % (operand_sym, )])
@@ -104,14 +96,13 @@ class CodeWriter(object):
             result = operand_func((b, a))
 
         elif self.command.arg1 in {'eq', 'lt', 'gt'}:
-            self.assm.extend(['@%s' % (self.SP-1)])
+            self.assm.extend(['@%s' % (self.sp.location-1)])
             self.assm.extend(['D=M']) # TODO: put this into write_pop
 
-            a = self.stack.pop()
-            b = self.stack.pop()
+            a = self.sp.pop()
+            b = self.sp.pop()
             jmp_op, result_func = operand[self.command.arg1]
             result = result_func((a, b, ))
-            self.SP_update() #TODO: this should be wrapped up somehow
 
             label_true  = self.label
             label_false = self.label + 1
@@ -121,7 +112,7 @@ class CodeWriter(object):
             self.label = self.label + 3
 
             # calc D jump condition
-            self.assm.extend(['@%s' % self.SP])
+            self.assm.extend(['@%s' % self.sp.location])
             self.assm.extend(['D=M-D'])
 
             # jump
@@ -131,14 +122,14 @@ class CodeWriter(object):
 
             # false
             self.assm.extend(['(L%s)' % label_false])
-            self.assm.extend(['@%s' % self.SP])
+            self.assm.extend(['@%s' % self.sp.location])
             self.assm.extend(['M=0'])
             self.assm.extend(['@L%s' % label_cont])
             self.assm.extend(['0;JMP'])
 
             # true
             self.assm.extend(['(L%s)' % label_true])
-            self.assm.extend(['@%s' % self.SP])
+            self.assm.extend(['@%s' % self.sp.location])
             self.assm.extend(['M=-1'])
             self.assm.extend(['@L%s' % label_cont])
             self.assm.extend(['0;JMP'])
@@ -148,8 +139,7 @@ class CodeWriter(object):
             self.assm.extend(['@SP'])
             self.assm.extend(['M=M-1'])
 
-        self.stack.extend([result])
-        self.SP_update()
+        self.sp.push(result)
 
     def incr_label(self):
         self.label = self.label + 1
@@ -159,15 +149,14 @@ class CodeWriter(object):
 
     def write_push(self):
         assert self.command.ctype == 'C_PUSH'
-        self.stack.extend([self.command.arg2])
+        self.sp.push(self.command.arg2)
 
         self.assm = []
         self.assm.extend(['@%s' % ( self.command.arg2, )] )
         self.assm.extend(["D=A"])
-        self.assm.extend(['@%s'  % (self.SP, )])
+        self.assm.extend(['@%s'  % (self.sp.location - 1, )])
         self.assm.extend(['M=D'])
 
-        self.SP_update()
         self.assm.extend(['@SP', 'M=M+1'])
 
     def close(self):
