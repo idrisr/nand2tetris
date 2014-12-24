@@ -111,5 +111,5 @@ class TestCodeWriter(TestCase):
         self.command.parse_command()
         self.cw.command = self.command
         self.cw.write_arithmetic()
-        assm_command = ['@SP', 'A=M-1', 'M=-M']
+        assm_command = ['@SP', 'A=M-1', 'MD=-M']
         self.assertListEqual(assm_command, self.cw.assm)
