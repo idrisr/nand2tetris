@@ -8,11 +8,11 @@ M=D // end idiom
 @SP
 M=M+1 // SP=257, @256=12
 
-////// pop local 8
+////// pop local 1
 // get LCL + arg2
 @LCL
 D=M
-@8 // arg2
+@1 // arg2
 D=A+D
 // set to TMP
 @R5
@@ -37,5 +37,22 @@ D=A
 @SP
 A=M
 M=D
+@SP
+M=M+1
+
+//// pop local 1
+// get local 1's value
+@LCL
+D=M
+@1 // arg2
+A=A+D
+D=M
+
+// put it in SP's value
+@SP
+A=M
+M=D
+
+// increment SP
 @SP
 M=M+1

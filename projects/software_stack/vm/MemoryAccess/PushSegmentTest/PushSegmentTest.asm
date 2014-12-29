@@ -7,7 +7,7 @@ M=D
 M=M+1
 @LCL
 D=M
-@8
+@1
 D=A+D
 @R5
 M=D
@@ -21,6 +21,16 @@ M=D
 M=M-1
 @21
 D=A
+@SP
+A=M
+M=D
+@SP
+M=M+1
+@LCL
+D=M
+@1
+A=A+D
+D=M
 @SP
 A=M
 M=D
