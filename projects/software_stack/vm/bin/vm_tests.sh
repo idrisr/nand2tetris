@@ -50,3 +50,6 @@ run_test MemoryAccess VeryBasicTest
 
 echo 'comparing Push N Test'
 run_test MemoryAccess PushNTest
+
+echo 'comparing Basic Memory Test'
+run_test MemoryAccess BasicTest
