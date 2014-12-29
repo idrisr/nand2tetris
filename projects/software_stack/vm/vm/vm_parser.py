@@ -42,7 +42,8 @@ if __name__ == '__main__':
         vmfile = sys.argv[1]
     except IndexError:
         dir = environ['HOME']
-        file = 'learning/nand2tetris/projects/software_stack/vm/StackArithmetic/SimpleAdd/SimpleAdd.vm'
+        file = path.join('learning/nand2tetris/projects/software_stack/vm/',
+                'StackArithmetic/SimpleAdd/SimpleAdd.vm')
         vmfile = path.join(dir, file)
 
     main(vmfile)

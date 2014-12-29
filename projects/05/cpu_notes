@@ -53,8 +53,8 @@
 The Hack machine language is based on two 16-bit command types. 
 The address instruction has the format 0vvvvvvvvvvvvvvv, 
 each v being 0 or 1. 
-This instruction causes the computer to load the 15-bit constant vvv...v into the
-A-register. 
+This instruction causes the computer to load the 15-bit constant vvv...v into
+the A-register. 
 
 The compute instruction has the format 111accccccdddjjj. 
     a- and c-bits instruct the ALU which function to compute, 
@@ -83,18 +83,20 @@ The compute instruction has the format 111accccccdddjjj.
             j   : jump part
 
 Execute:
-    Various bit parts of the current instruction are simultaneously fed to various
-    chips in the computer. If it’s an address instruction (most significant bit =
-    0), the A-register is set to the 15-bit constant embedded in the instruction.
+    Various bit parts of the current instruction are simultaneously fed to
+various chips in the computer. If it’s an address instruction (most significant
+bit = 0), the A-register is set to the 15-bit constant embedded in the
+instruction.
 
-    If it’s a compute instruction (MSB = 1), its underlying a-, c-, d- and j-bits
-    are treated as control bits that cause the ALU and the registers to execute the
-    instruction.
+    If it’s a compute instruction (MSB = 1), its underlying a-, c-, d- and
+j-bits are treated as control bits that cause the ALU and the registers to
+execute the instruction.
 
 ## instruction execution
     The various fields of the instruction (i, a, c, d, and jbits) are routed
-    simultaneously to various parts of the architecture, where they cause different
-    chips to do what they are supposed to do in order to execute either the
+    simultaneously to various parts of the architecture, where they cause
+different chips to do what they are supposed to do in order to execute either
+the
     A-instruction or the C-instruction, as mandated by the machine language
     specification. 
 

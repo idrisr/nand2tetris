@@ -170,14 +170,19 @@ class CodeWriter(object):
         segment = seg_map[self.command.arg1]
         self.assm = [] # TODO:do this in process_command instead of repeating
         # TODO: make this work for non zero destination
+
+        self.assm.extend(['@%s' % segment])
+        self.assm.extend(['D=M'])
+        self.assm.extend(['@%s' % self.command.arg2])
+        self.assm.extend(['D=A+D'])
+        self.assm.extend(['@R5'])
+        self.assm.extend(['M=D'])
         self.assm.extend(['@SP'])
         self.assm.extend(['A=M-1'])
         self.assm.extend(['D=M'])
-        self.assm.extend(['@%s' % segment])
-        self.assm.extend(['A=M '])
+        self.assm.extend(['@R5'])
+        self.assm.extend(['A=M'])
         self.assm.extend(['M=D'])
-        self.assm.extend(['@%s' % segment])
-        self.assm.extend(['M=M+1'])
         self.assm.extend(['@SP'])
         self.assm.extend(['M=M-1'])
 

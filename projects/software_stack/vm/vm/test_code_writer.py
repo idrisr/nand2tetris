@@ -101,6 +101,7 @@ class TestCodeWriter(TestCase):
 
 
     def test_pop_to_diff_stack(self):
+        """ test pushing to segment. 0 arg2 """
         # push ten onto global stack
         self.cw.sp.push(10)
 
@@ -111,5 +112,20 @@ class TestCodeWriter(TestCase):
 
         assm_command = ['@SP', 'A=M-1', 'D=M', '@LCL', 'A=M ', 'M=D', '@LCL',
                 'M=M+1', '@SP', 'M=M-1']
+
+        # self.assertListEqual(assm_command, self.cw.assm)
+
+    def test_pop_non0_to_diff_stack(self):
+        """ test pushing to segment. non 0 arg2 """
+        # push ten onto global stack
+        self.cw.sp.push(10)
+
+        # pop it off and it goes into local
+        command = VMCommand('pop local 8')
+        command.parse_command()
+        self.cw.process_command(command)
+
+        assm_command = ['@LCL', 'D=M', '@8', 'D=A+D', '@R5', 'M=D', '@SP',
+                'A=M-1', 'D=M', '@R5', 'A=M', 'M=D', '@SP', 'M=M-1']
 
         self.assertListEqual(assm_command, self.cw.assm)
