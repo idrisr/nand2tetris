@@ -1,4 +1,4 @@
-//// push constant 10
+//// push constant 12
 @12
 D=A
 // @256 // should use SP's M to do this!
@@ -8,30 +8,28 @@ M=D // end idiom
 @SP
 M=M+1 // SP=257, @256=12
 
-
-//// pop local 0
-// get the value pointed at by SP-1
+////// pop local 8
+// get LCL + arg2
+@LCL
+D=M
+@8 // arg2
+D=A+D
+// set to TMP
+@R5
+M=D
+// put SP in D
 @SP
 A=M-1 // go to the address-1 of SP
 D=M   // D = 12
 
-// Get to the address pointed at by LCL ( or LCL - 1?)
-@LCL
-A=M // goto where LCL is pointed at
-M=D // set its value to D
+// set LCL+ arg2
+@R5
+A=M
+M=D
 
-// incrememnt LCL's pointer
-@LCL
-M=M+1
-
-// decrement SP's pointer
+// decrement SP
 @SP
 M=M-1
-////
-
-// @LCL = 11
-// @SP = 256
-// @10 = 12
 
 //// push constant 21
 @21

@@ -17,7 +17,7 @@ set RAM[1] 300, // LCL
 // set RAM[4] 3010,// THAT
 
 repeat 50 {
-  ticktock;
+  vmstep;
 }
 
 output;
