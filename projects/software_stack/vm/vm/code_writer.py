@@ -76,16 +76,15 @@ class CodeWriter(object):
 
         assert self.command.ctype == 'C_ARITHMETIC'
 
-        bool_map = {1:-1, 0:0}
         operand = {'add':  '+',
                    'sub':  '-',
                    'and':  '&',
                    'or' :  '|',
-                   'eq' : ('JEQ', lambda x : bool_map[x[0]==x[1]]),
-                   'lt' : ('JLT', lambda x : bool_map[x[0]< x[1]]),
-                   'gt' : ('JGT', lambda x : bool_map[x[0]> x[1]]),
-                   'neg': (lambda x: -x, '-'),
-                   'not': (lambda x: ~x, '!')
+                   'eq' : 'JEQ',
+                   'lt' : 'JLT',
+                   'gt' : 'JGT',
+                   'neg':  '-',
+                   'not':  '!'
                    }
 
         self.assm = []
@@ -108,11 +107,7 @@ class CodeWriter(object):
             self.assm.extend(['M=M%sD' % operand[self.command.arg1]])
 
         elif self.command.arg1 in {'eq', 'lt', 'gt'}:
-            self.assm.extend(['@SP'])
-            self.assm.extend(['A=M'])
-            self.assm.extend(['D=M-1']) 
-
-            jmp_op, result_func = operand[self.command.arg1]
+            jmp_op = operand[self.command.arg1]
 
             label_true  = self.label
             label_false = self.label + 1
@@ -122,10 +117,16 @@ class CodeWriter(object):
             self.label = self.label + 3
 
             # calc D jump condition
-            # self.assm.extend(['@%s' % self.sp.location])
-            self.assm.extend(['@SP'])
-            self.assm.extend(['A=M'])
-            self.assm.extend(['D=M-D'])
+            self.assm.extend(['@SP'])  # load SP-1 into D
+            self.assm.extend(['A=M-1'])
+            self.assm.extend(['D=M']) 
+            self.assm.extend(['@SP'])  # decrement SP
+            self.assm.extend(['M=M-1']) 
+            self.assm.extend(['@SP'])  # load SP -1 
+            self.assm.extend(['A=M-1']) 
+            self.assm.extend(['D=M-D']) # compare D and M
+            self.assm.extend(['@SP'])   # decrement SP
+            self.assm.extend(['M=M-1'])
 
             # jump
             self.assm.extend(['@L%s' % label_true])
@@ -135,7 +136,6 @@ class CodeWriter(object):
             # false
             self.assm.extend(['(L%s)' % label_false])
 
-            # self.assm.extend(['@%s' % self.sp.location])
             self.assm.extend(['@SP'])
             self.assm.extend(['A=M'])
 
@@ -145,8 +145,6 @@ class CodeWriter(object):
 
             # true
             self.assm.extend(['(L%s)' % label_true])
-
-            # self.assm.extend(['@%s' % self.sp.location])
             self.assm.extend(['@SP'])
             self.assm.extend(['A=M'])
 
@@ -157,7 +155,7 @@ class CodeWriter(object):
             # continue
             self.assm.extend(['(L%s)' % label_cont])
             self.assm.extend(['@SP'])
-            self.assm.extend(['M=M-1'])
+            self.assm.extend(['M=M+1'])
 
 
     def incr_label(self):
@@ -199,40 +197,41 @@ class CodeWriter(object):
             self.assm.extend(['@SP'])
             self.assm.extend(['M=M-1'])
 
-
     def write_push(self):
-        # TODO: this only works for constant now. Fix.
         assert self.command.ctype == 'C_PUSH'
-        self.sp.push(self.command.arg2)
-        self.assm = []
 
-        if self.command.arg1=='constant':
-            self.assm.extend(['@%s' % ( self.command.arg2, )] )
-            self.assm.extend(["D=A"])
-            self.assm.extend(["@SP"])
-            self.assm.extend(["A=M"])
-            self.assm.extend(["M=D"])
-            self.assm.extend(['@SP'])
-            self.assm.extend(['M=M+1'])
-        else:
-            segment = self.seg_map[self.command.arg1]
-            address = self.command.arg2
-            self.assm.extend(['@%s' % segment])
+        self.assm = []
+        segment = self.seg_map[self.command.arg1]
+        address = self.command.arg2
+
+        if segment == 'TEMP':
+            address = int(address) + 5
+            assert 5 <= address <= 12 # RAM[5-12] are temp addresses
+            self.assm.extend(['@%s' % (address, )])
             self.assm.extend(['D=M'])
-            self.assm.extend(['@%s' % address])
+
+        elif segment == 'constant':
+            self.assm.extend(['@%s' % ( address, )] )
+            self.assm.extend(["D=A"])
+
+        else:
+            self.assm.extend(['@%s' % ( segment, )])
+            self.assm.extend(['D=M'])
+            self.assm.extend(['@%s' % ( address, )])
             self.assm.extend(['A=A+D'])
             self.assm.extend(['D=M'])
-            self.assm.extend(['@SP'])
-            self.assm.extend(['A=M'])
-            self.assm.extend(['M=D'])
-            self.assm.extend(['@SP'])
-            self.assm.extend(['M=M+1'])
+
+        self.assm.extend(["@SP"])
+        self.assm.extend(["A=M"])
+        self.assm.extend(["M=D"])
+        self.assm.extend(['@SP'])
+        self.assm.extend(['M=M+1'])
 
     def close(self):
         """ Closes the output file """
         pass
 
     def __repr__(self):
-        attributes = ['stack', 'SP', 'command']
+        attributes = ['command']
         return ''.join(['%s:\t%r\n' % (_, getattr(self, _, ''),) for _ in
             attributes])
