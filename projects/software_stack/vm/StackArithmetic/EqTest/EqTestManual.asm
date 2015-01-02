@@ -15,24 +15,34 @@ M=D
 M=M+1
 
 // eq
-@257
+@SP
+A=M-1
 D=M
+@SP
+M=M-1
 
-@256
+@SP
+A=M-1
 D=M-D
+
+@SP
+M=M-1
+
 @L1.t // true
 D;JEQ
 @L1.f // false
 (L1.f) // false
-    @256
+    @SP
+    A=M
     M=0
     @L1.c  // continue
     0;JMP
 (L1.t)
-    @256
+    @SP
+    A=M
     M=-1
     @L1.c // continue
     0;JMP
 (L1.c) 
-    @SP
-    M=M-1  // decrement stack pointer
+@SP
+M=M+1

@@ -27,7 +27,6 @@ class TestCodeWriter(TestCase):
     def test_write_two_push_constant(self):
         """ push contant [0-9]* twice in a row"""
 
-
         asm_command = ['@7', 'D=A', '@SP', 'A=M', 'M=D', '@SP', 'M=M+1']
         command = VMCommand('push constant 7')
         command.parse_command()
@@ -50,7 +49,9 @@ class TestCodeWriter(TestCase):
         commands = ['push constant 7', 'push constant 8', 'add']
         self.process_commands(commands);
 
-        assm_command = ['@256', 'M=M+D', '@SP', 'M=M-1']
+        assm_command = ['@SP', 'A=M-1', 'D=M', '@SP', 'M=M-1', '@SP', 'A=M-1',
+                'M=M+D']
+
         self.assertListEqual(assm_command, self.cw.assm)
 
 
@@ -59,11 +60,11 @@ class TestCodeWriter(TestCase):
         commands = ['push constant 20', 'push constant 20', 'eq']
         self.process_commands(commands)
 
-        assm_command = [
-        '@257' , 'D=M'  , '@256'  , 'D=M-D' , '@L0'   , 'D;JEQ' , '@L1'  ,
-        '(L1)' , '@256' , 'M=0'   , '@L2'   , '0;JMP' , '(L0)'  , '@256' ,
-        'M=-1' , '@L2'  , '0;JMP' , '(L2)'  , '@SP'   , 'M=M-1'
-        ]
+        assm_command = ['@SP', 'A=M-1', 'D=M', '@SP', 'M=M-1', '@SP', 'A=M-1',
+                'D=M-D', '@SP', 'M=M-1', '@L%s' % 0, 'D;JEQ', '@L%s' % 1,
+                '(L%s)' % 1, '@SP', 'A=M', 'M=0', '@L%s' % 2, '0;JMP', '(L%s)' %
+                0, '@SP', 'A=M', 'M=-1', '@L%s' % 2, '0;JMP', '(L%s)' % 2,
+                '@SP', 'M=M+1']
 
         self.assertListEqual(assm_command, self.cw.assm)
 

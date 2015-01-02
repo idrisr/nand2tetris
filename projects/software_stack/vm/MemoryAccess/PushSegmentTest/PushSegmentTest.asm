@@ -1,11 +1,11 @@
-@12
+@12 // push   constant   12
 D=A
 @SP
 A=M
 M=D
 @SP
 M=M+1
-@LCL
+@LCL // pop    local      1
 D=M
 @1
 D=A+D
@@ -19,14 +19,14 @@ A=M
 M=D
 @SP
 M=M-1
-@21
+@21 // push   constant   21
 D=A
 @SP
 A=M
 M=D
 @SP
 M=M+1
-@LCL
+@LCL // push   local      1
 D=M
 @1
 A=A+D

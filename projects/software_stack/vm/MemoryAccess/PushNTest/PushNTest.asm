@@ -1,4 +1,4 @@
-@12 // push   constant   12
+@18 // push   constant   18
 D=A
 @SP
 A=M

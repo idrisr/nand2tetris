@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-from stack import SP, LCL, ARG, THIS, THAT
 import pdb
 
 class CodeWriter(object):
@@ -13,12 +12,9 @@ class CodeWriter(object):
 
     def __init__(self):
         """ opens the output file/stream and gets ready to write into it """
-        self.sp = SP()
-        self.lcl = LCL()
-        self.arg = ARG()
-        self.THIS = THIS()
-        self.THAT = THAT()
+
         self.label = 0
+
         self.seg_map = {
             'argument' : 'ARG',
             'local'    : 'LCL',
@@ -26,7 +22,8 @@ class CodeWriter(object):
             'static'   : '',
             'temp'     : 'TEMP',
             'that'     : 'THAT',
-            'this'     : 'THIS'
+            'this'     : 'THIS',
+            'constant' : 'constant'
         }
 
     def process_command(self, command):
@@ -51,8 +48,11 @@ class CodeWriter(object):
         self.write_command()
 
     def write_command(self):
-        print '// %s' % (self.command.command, )
-        print '\n'.join(self.assm)
+        assm = self.assm[:] # hack to copy list and append vm command as
+                            # comment without killing the tests
+        assm[0] = assm[0] + ' // %s' % (self.command.command, )
+        print '\n'.join(assm)
+        # TODO: add DEBUG flag and or logging
 
     def open_stream(self, file_name):
         # TODO: try blocks etc. doing this boilerplate an awful lot...
@@ -90,9 +90,9 @@ class CodeWriter(object):
         self.assm = []
 
         if self.command.arg1 in {'neg', 'not'}:
-            operand_func, operand_sym = operand[self.command.arg1]
-
-            self.assm.extend(['@SP', 'A=M-1', 'MD=%sM' % (operand_sym, )])
+            self.assm.extend(['@SP'])
+            self.assm.extend(['A=M-1'])
+            self.assm.extend(['MD=%sM' % operand[self.command.arg1]])
 
         elif self.command.arg1 in {'add', 'sub', 'and', 'or'}:
 
@@ -188,7 +188,7 @@ class CodeWriter(object):
 
         elif segment == 'TEMP':
             address = int(address) + 5
-            assert 5 <= address <= 11 # RAM[5-12] are temp addresses
+            assert 5 <= address <= 12 # RAM[5-12] are temp addresses
             self.assm.extend(['@SP'])
             self.assm.extend(['A=M-1'])
             self.assm.extend(['D=M'])

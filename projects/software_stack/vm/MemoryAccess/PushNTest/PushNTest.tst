@@ -3,8 +3,8 @@
 // by Nisan and Schocken, MIT Press.
 // File name: projects/07/MemoryAccess/PushNTest/PushNTest.tst
 
-// load PushNTest.asm,
-load PushNTestManual.asm,
+load PushNTest.asm,
+// load PushNTestManual.asm,
 output-file PushNTest.out,
 compare-to PushNTest.cmp,
 //          SP            LCL           @SP-1           @LCL-1

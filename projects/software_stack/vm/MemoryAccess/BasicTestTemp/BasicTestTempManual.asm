@@ -8,12 +8,6 @@ M=D
 M=M+1
 
 // pop temp 6
-// @R5
-// D=M
-// @11 // translate arg1 with arg2 directly to address
-// D=A+D
-// @R5
-// M=D
 @SP
 A=M-1
 D=M

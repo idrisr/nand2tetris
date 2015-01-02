@@ -1,0 +1,18 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/07/StackArithmetic/StackTest/StackTest.vm
+
+// Executes a sequence of arithmetic and logical operations
+// on the stack. 
+push constant 57
+push constant 31
+push constant 53  // 57, 31, 53
+add               // 57, 84
+push constant 112 // 57, 84, 112
+sub               // 57, -28
+neg               // 57, 28
+and               // 24
+// push constant 82  // 24, 82
+// or                // 90
+// not               // -91
