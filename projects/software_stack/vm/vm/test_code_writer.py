@@ -110,10 +110,10 @@ class TestCodeWriter(TestCase):
         command.parse_command()
         self.cw.process_command(command)
 
-        assm_command = ['@SP', 'A=M-1', 'D=M', '@LCL', 'A=M ', 'M=D', '@LCL',
-                'M=M+1', '@SP', 'M=M-1']
+        assm_command = ['@LCL', 'D=M', '@0', 'D=A+D', '@R5', 'M=D', '@SP',
+                'A=M-1', 'D=M', '@R5', 'A=M', 'M=D', '@SP', 'M=M-1']
 
-        # self.assertListEqual(assm_command, self.cw.assm)
+        self.assertListEqual(assm_command, self.cw.assm)
 
     def test_pop_non0_to_diff_stack(self):
         """ test pushing to segment. non 0 arg2 """
@@ -127,5 +127,38 @@ class TestCodeWriter(TestCase):
 
         assm_command = ['@LCL', 'D=M', '@8', 'D=A+D', '@R5', 'M=D', '@SP',
                 'A=M-1', 'D=M', '@R5', 'A=M', 'M=D', '@SP', 'M=M-1']
+
+        self.assertListEqual(assm_command, self.cw.assm)
+
+    def test_pop_from_segment(self):
+        """ test pushing from segment onto """
+        prep_commands=['push constant 12',
+                       'pop local 1',
+                       'push constant 21']
+        for _ in prep_commands:
+            command = VMCommand(_)
+            command.parse_command()
+
+        command = VMCommand('push local 1')
+        command.parse_command()
+        self.cw.process_command(command)
+
+        assm_command = ['@LCL', 'D=M', '@1', 'A=A+D', 'D=M', '@SP', 'A=M',
+                'M=D', '@SP', 'M=M+1']
+
+        self.assertListEqual(assm_command, self.cw.assm)
+
+    def test_pop_from_temp(self):
+        """ test popping from TMP segment """
+        prep_commands = ['push constant 510']
+        for _ in prep_commands:
+            command = VMCommand(_)
+            command.parse_command()
+
+        command = VMCommand('pop temp 6')
+        command.parse_command()
+        self.cw.process_command(command)
+
+        assm_command = ['@SP', 'A=M-1', 'D=M', '@11', 'M=D', '@SP', 'M=M-1']
 
         self.assertListEqual(assm_command, self.cw.assm)

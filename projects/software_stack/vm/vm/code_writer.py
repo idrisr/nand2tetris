@@ -19,6 +19,15 @@ class CodeWriter(object):
         self.THIS = THIS()
         self.THAT = THAT()
         self.label = 0
+        self.seg_map = {
+            'argument' : 'ARG',
+            'local'    : 'LCL',
+            'pointer'  : '',
+            'static'   : '',
+            'temp'     : 'TEMP',
+            'that'     : 'THAT',
+            'this'     : 'THIS'
+        }
 
     def process_command(self, command):
         """ call proper methods of this class based on the command type """
@@ -41,10 +50,9 @@ class CodeWriter(object):
         ctypes[self.command.ctype]()
         self.write_command()
 
-
     def write_command(self):
+        print '// %s' % (self.command.command, )
         print '\n'.join(self.assm)
-
 
     def open_stream(self, file_name):
         # TODO: try blocks etc. doing this boilerplate an awful lot...
@@ -154,37 +162,40 @@ class CodeWriter(object):
 
     def write_pop(self):
         """ to pop things off the global stack onto other segments """
-        seg_map = {
-            'argument' : 'ARG',
-            'local'    : 'LCL',
-            'pointer'  : '',
-            'static'   : '',
-            'temp'     : '',
-            'that'     : 'THAT',
-            'this'     : 'THIS'
-        }
 
-        # pdb.set_trace()
         assert self.command.ctype == 'C_POP'
 
-        segment = seg_map[self.command.arg1]
-        self.assm = [] # TODO:do this in process_command instead of repeating
-        # TODO: make this work for non zero destination
+        segment = self.seg_map[self.command.arg1]
+        address = self.command.arg2
+        self.assm = [] # TODO: do this in process_command instead of repeating
 
-        self.assm.extend(['@%s' % segment])
-        self.assm.extend(['D=M'])
-        self.assm.extend(['@%s' % self.command.arg2])
-        self.assm.extend(['D=A+D'])
-        self.assm.extend(['@R5'])
-        self.assm.extend(['M=D'])
-        self.assm.extend(['@SP'])
-        self.assm.extend(['A=M-1'])
-        self.assm.extend(['D=M'])
-        self.assm.extend(['@R5'])
-        self.assm.extend(['A=M'])
-        self.assm.extend(['M=D'])
-        self.assm.extend(['@SP'])
-        self.assm.extend(['M=M-1'])
+        if segment != 'TEMP':
+            # this is different for temp. There's no pointer to temp
+            self.assm.extend(['@%s' % segment])
+            self.assm.extend(['D=M'])
+            self.assm.extend(['@%s' % address])
+            self.assm.extend(['D=A+D'])
+            self.assm.extend(['@R5'])
+            self.assm.extend(['M=D'])
+            self.assm.extend(['@SP'])
+            self.assm.extend(['A=M-1'])
+            self.assm.extend(['D=M'])
+            self.assm.extend(['@R5'])
+            self.assm.extend(['A=M'])
+            self.assm.extend(['M=D'])
+            self.assm.extend(['@SP'])
+            self.assm.extend(['M=M-1'])
+
+        elif segment == 'TEMP':
+            address = int(address) + 5
+            assert 5 <= address <= 11 # RAM[5-12] are temp addresses
+            self.assm.extend(['@SP'])
+            self.assm.extend(['A=M-1'])
+            self.assm.extend(['D=M'])
+            self.assm.extend(['@%s' % address])
+            self.assm.extend(['M=D'])
+            self.assm.extend(['@SP'])
+            self.assm.extend(['M=M-1'])
 
 
     def write_push(self):
@@ -193,13 +204,27 @@ class CodeWriter(object):
         self.sp.push(self.command.arg2)
         self.assm = []
 
-        self.assm.extend(['@%s' % ( self.command.arg2, )] )
-        self.assm.extend(["D=A"])
-        self.assm.extend(["@SP"]) # can replace with whichever stack
-        self.assm.extend(["A=M"])
-        self.assm.extend(["M=D"])
-        self.assm.extend(['@SP'])
-        self.assm.extend(['M=M+1'])
+        if self.command.arg1=='constant':
+            self.assm.extend(['@%s' % ( self.command.arg2, )] )
+            self.assm.extend(["D=A"])
+            self.assm.extend(["@SP"])
+            self.assm.extend(["A=M"])
+            self.assm.extend(["M=D"])
+            self.assm.extend(['@SP'])
+            self.assm.extend(['M=M+1'])
+        else:
+            segment = self.seg_map[self.command.arg1]
+            address = self.command.arg2
+            self.assm.extend(['@%s' % segment])
+            self.assm.extend(['D=M'])
+            self.assm.extend(['@%s' % address])
+            self.assm.extend(['A=A+D'])
+            self.assm.extend(['D=M'])
+            self.assm.extend(['@SP'])
+            self.assm.extend(['A=M'])
+            self.assm.extend(['M=D'])
+            self.assm.extend(['@SP'])
+            self.assm.extend(['M=M+1'])
 
     def close(self):
         """ Closes the output file """
