@@ -4,6 +4,7 @@
 // File name: projects/07/MemoryAccess/PushNTest/PushNTest.vm
 
 // Executes pop & push commands using the virtual memory segments.
-push   constant   12
+push   constant   18
 pop    local      8
 push   constant   21
+push   local      8
