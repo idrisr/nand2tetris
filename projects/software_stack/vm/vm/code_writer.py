@@ -77,10 +77,10 @@ class CodeWriter(object):
         assert self.command.ctype == 'C_ARITHMETIC'
 
         bool_map = {1:-1, 0:0}
-        operand = {'add': (lambda x: x[0] + x[1], '+'),
-                   'sub': (lambda x: x[0] - x[1], '-'),
-                   'and': (lambda x: x[0] & x[1], '&'),
-                   'or' : (lambda x: x[0] | x[1], '|'),
+        operand = {'add':  '+',
+                   'sub':  '-',
+                   'and':  '&',
+                   'or' :  '|',
                    'eq' : ('JEQ', lambda x : bool_map[x[0]==x[1]]),
                    'lt' : ('JLT', lambda x : bool_map[x[0]< x[1]]),
                    'gt' : ('JGT', lambda x : bool_map[x[0]> x[1]]),
@@ -88,37 +88,31 @@ class CodeWriter(object):
                    'not': (lambda x: ~x, '!')
                    }
 
-
-        # TODO: Probably the VMCommand should have the `assm` attribute
         self.assm = []
 
         if self.command.arg1 in {'neg', 'not'}:
-            a = int(self.sp.pop())
             operand_func, operand_sym = operand[self.command.arg1]
 
             self.assm.extend(['@SP', 'A=M-1', 'MD=%sM' % (operand_sym, )])
-            result = operand_func(a)
 
         elif self.command.arg1 in {'add', 'sub', 'and', 'or'}:
-            a = self.sp.pop()
-            b = self.sp.pop()
 
-            self.assm.extend(['@%s' % self.sp.location ])
-            operand_func, operand_sym = operand[self.command.arg1]
-
-            self.assm.extend(['M=M%sD' % (operand_sym, )])
-            self.assm.extend(['@SP', 'M=M-1'])
-
-            result = operand_func((b, a))
+            # TODO: get SP value from SP pointer
+            self.assm.extend(['@SP'])
+            self.assm.extend(['A=M-1'])
+            self.assm.extend(['D=M'])
+            self.assm.extend(['@SP'])
+            self.assm.extend(['M=M-1'])
+            self.assm.extend(['@SP'])
+            self.assm.extend(['A=M-1'])
+            self.assm.extend(['M=M%sD' % operand[self.command.arg1]])
 
         elif self.command.arg1 in {'eq', 'lt', 'gt'}:
-            self.assm.extend(['@%s' % (self.sp.location-1)])
-            self.assm.extend(['D=M']) # TODO: put this into write_pop
+            self.assm.extend(['@SP'])
+            self.assm.extend(['A=M'])
+            self.assm.extend(['D=M-1']) 
 
-            a = self.sp.pop()
-            b = self.sp.pop()
             jmp_op, result_func = operand[self.command.arg1]
-            result = result_func((a, b, ))
 
             label_true  = self.label
             label_false = self.label + 1
@@ -128,7 +122,9 @@ class CodeWriter(object):
             self.label = self.label + 3
 
             # calc D jump condition
-            self.assm.extend(['@%s' % self.sp.location])
+            # self.assm.extend(['@%s' % self.sp.location])
+            self.assm.extend(['@SP'])
+            self.assm.extend(['A=M'])
             self.assm.extend(['D=M-D'])
 
             # jump
@@ -138,14 +134,22 @@ class CodeWriter(object):
 
             # false
             self.assm.extend(['(L%s)' % label_false])
-            self.assm.extend(['@%s' % self.sp.location])
+
+            # self.assm.extend(['@%s' % self.sp.location])
+            self.assm.extend(['@SP'])
+            self.assm.extend(['A=M'])
+
             self.assm.extend(['M=0'])
             self.assm.extend(['@L%s' % label_cont])
             self.assm.extend(['0;JMP'])
 
             # true
             self.assm.extend(['(L%s)' % label_true])
-            self.assm.extend(['@%s' % self.sp.location])
+
+            # self.assm.extend(['@%s' % self.sp.location])
+            self.assm.extend(['@SP'])
+            self.assm.extend(['A=M'])
+
             self.assm.extend(['M=-1'])
             self.assm.extend(['@L%s' % label_cont])
             self.assm.extend(['0;JMP'])
@@ -155,14 +159,12 @@ class CodeWriter(object):
             self.assm.extend(['@SP'])
             self.assm.extend(['M=M-1'])
 
-        self.sp.push(result)
 
     def incr_label(self):
         self.label = self.label + 1
 
     def write_pop(self):
         """ to pop things off the global stack onto other segments """
-
         assert self.command.ctype == 'C_POP'
 
         segment = self.seg_map[self.command.arg1]

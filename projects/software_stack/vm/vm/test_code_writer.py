@@ -8,29 +8,25 @@ class TestCodeWriter(TestCase):
     def setUp(self):
         self.cw = CodeWriter()
 
-    def clear_stack(self):
-        self.cw.stack = []
-        self.cw.SP = 256
+    def process_commands(self, commands):
+        for _ in commands:
+            command = VMCommand(_)
+            command.parse_command()
+            self.cw.process_command(command)
 
     def test_write_push_constant(self):
         """ test push constant [0-9]* """
 
-        # empty stack
-        self.clear_stack()
-
         # need to update SP, ie RAM[0]
         asm_command = ['@7', 'D=A', '@SP', 'A=M', 'M=D', '@SP', 'M=M+1']
 
-        command = VMCommand('push constant 7')
-        command.parse_command()
-        self.cw.process_command(command)
+        commands = ['push constant 7']
+        self.process_commands(commands)
         self.assertListEqual(asm_command, self.cw.assm)
 
     def test_write_two_push_constant(self):
         """ push contant [0-9]* twice in a row"""
 
-        # empty stack
-        self.clear_stack()
 
         asm_command = ['@7', 'D=A', '@SP', 'A=M', 'M=D', '@SP', 'M=M+1']
         command = VMCommand('push constant 7')
@@ -50,35 +46,18 @@ class TestCodeWriter(TestCase):
         the result back on the stack
         """
 
-        # empty stack
-        self.clear_stack()
-
         # put 7 & 8 on the stack to add
-        self.cw.sp.push(7)
-        self.cw.sp.push(8)
+        commands = ['push constant 7', 'push constant 8', 'add']
+        self.process_commands(commands);
 
-        command = VMCommand('add')
-        command.parse_command()
-        self.cw.process_command(command)
-
-        self.assertEqual(self.cw.sp.stack[-1], 15, self.cw)
         assm_command = ['@256', 'M=M+D', '@SP', 'M=M-1']
         self.assertListEqual(assm_command, self.cw.assm)
 
 
     def test_write_arithmetic_eq(self):
         """ test eq """
-        # empty stack
-        self.clear_stack()
-
-        # put 7 & 8 on the stack to add
-        self.cw.sp.push(20)
-        self.cw.sp.push(20)
-
-        command = VMCommand('eq')
-        command.parse_command()
-        self.cw.process_command(command)
-        self.assertEqual(self.cw.sp.stack[-1], -1, self.cw)
+        commands = ['push constant 20', 'push constant 20', 'eq']
+        self.process_commands(commands)
 
         assm_command = [
         '@257' , 'D=M'  , '@256'  , 'D=M-D' , '@L0'   , 'D;JEQ' , '@L1'  ,
@@ -90,8 +69,8 @@ class TestCodeWriter(TestCase):
 
     def test_neg(self):
         """ test taking negative of top item on stack """
-        self.clear_stack()
-        self.cw.sp.push(10)
+        commands = ['push constant 10']
+        self.process_commands(commands)
 
         command = VMCommand('neg')
         command.parse_command()
@@ -101,14 +80,13 @@ class TestCodeWriter(TestCase):
 
 
     def test_pop_to_diff_stack(self):
-        """ test pushing to segment. 0 arg2 """
+        """ test popping to segment. 0 arg2 """
         # push ten onto global stack
-        self.cw.sp.push(10)
+        commands=['push constant 10', 
+               'pop local 0' ]
+        self.process_commands(commands)
 
         # pop it off and it goes into local
-        command = VMCommand('pop local 0')
-        command.parse_command()
-        self.cw.process_command(command)
 
         assm_command = ['@LCL', 'D=M', '@0', 'D=A+D', '@R5', 'M=D', '@SP',
                 'A=M-1', 'D=M', '@R5', 'A=M', 'M=D', '@SP', 'M=M-1']
@@ -118,12 +96,9 @@ class TestCodeWriter(TestCase):
     def test_pop_non0_to_diff_stack(self):
         """ test pushing to segment. non 0 arg2 """
         # push ten onto global stack
-        self.cw.sp.push(10)
-
-        # pop it off and it goes into local
-        command = VMCommand('pop local 8')
-        command.parse_command()
-        self.cw.process_command(command)
+        commands = ['push constant 10',
+                    'pop local 8']
+        self.process_commands(commands)
 
         assm_command = ['@LCL', 'D=M', '@8', 'D=A+D', '@R5', 'M=D', '@SP',
                 'A=M-1', 'D=M', '@R5', 'A=M', 'M=D', '@SP', 'M=M-1']
@@ -154,6 +129,7 @@ class TestCodeWriter(TestCase):
         for _ in prep_commands:
             command = VMCommand(_)
             command.parse_command()
+            self.cw.process_command(command)
 
         command = VMCommand('pop temp 6')
         command.parse_command()
@@ -161,4 +137,33 @@ class TestCodeWriter(TestCase):
 
         assm_command = ['@SP', 'A=M-1', 'D=M', '@11', 'M=D', '@SP', 'M=M-1']
 
+        self.assertListEqual(assm_command, self.cw.assm)
+
+    def test_push_from_temp(self):
+        """ test pushing from TMP segment """
+        prep_commands = ['push constant 510',
+                         'pop temp 6',
+                         'push constant 415']
+
+        for _ in prep_commands:
+            command = VMCommand(_)
+            command.parse_command()
+            self.cw.process_command(command)
+
+        command = VMCommand('push temp 6')
+        command.parse_command()
+        self.cw.process_command(command)
+
+        assm_command = ['@11', 'D=M', '@SP', 'A=M', 'M=D', '@SP', 'M=M+1']
+        self.assertListEqual(assm_command, self.cw.assm)
+
+    def test_push_from_segment(self):
+        """ test pushing from segment onto global stack """
+        commands = ['push constant 510',
+                         'pop local 6',
+                         'push local 6']
+        self.process_commands(commands)
+
+        assm_command = ['@LCL', 'D=M', '@6', 'A=A+D', 'D=M', '@SP', 'A=M',
+            'M=D', '@SP', 'M=M+1']
         self.assertListEqual(assm_command, self.cw.assm)
