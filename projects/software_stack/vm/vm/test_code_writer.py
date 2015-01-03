@@ -168,3 +168,19 @@ class TestCodeWriter(TestCase):
         assm_command = ['@LCL', 'D=M', '@6', 'A=A+D', 'D=M', '@SP', 'A=M',
             'M=D', '@SP', 'M=M+1']
         self.assertListEqual(assm_command, self.cw.assm)
+
+    def test_pop_from_pointer(self):
+        """ test popping to pointer """
+        commands = ['push constant 3040', 'pop pointer 0']
+        self.process_commands(commands)
+
+        assm_command = ['@SP', 'A=M-1', 'D=M', '@3', 'M=D', '@SP', 'M=M-1']
+        self.assertListEqual(assm_command, self.cw.assm)
+
+    def test_push_from_pointer(self):
+        """ test pushing to pointer """
+        commands = ['push constant 3040', 'pop pointer 0', 'push pointer 0']
+        self.process_commands(commands)
+
+        assm_command = ['@3', 'D=M', '@SP', 'A=M', 'M=D', '@SP', 'M=M+1']
+        self.assertListEqual(assm_command, self.cw.assm)

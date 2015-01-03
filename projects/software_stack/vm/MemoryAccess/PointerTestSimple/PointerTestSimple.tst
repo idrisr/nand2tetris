@@ -3,11 +3,15 @@
 // by Nisan and Schocken, MIT Press.
 // File name: projects/07/MemoryAccess/PointerTestSimple/PointerTestSimple.tst
 
+// load PointerTestSimpleManual.asm,
 load PointerTestSimple.asm,
 output-file PointerTestSimple.out,
 compare-to PointerTestSimple.cmp,
-output-list RAM[256]%D1.6.1 RAM[3]%D1.6.1 
-            RAM[4]%D1.6.1 RAM[3032]%D1.6.1 RAM[3046]%D1.6.1;
+output-list
+RAM[0]%D1.6.1
+RAM[3]%D1.6.1
+RAM[4]%D1.6.1
+RAM[256]%D1.6.1;
 
 set RAM[0] 256,
 

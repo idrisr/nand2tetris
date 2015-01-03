@@ -59,3 +59,6 @@ run_test MemoryAccess BasicTestTemp
 
 echo 'comparing Basic Memory Test'
 run_test MemoryAccess BasicTest
+
+echo 'comparing Simple Pointer Test'
+run_test MemoryAccess PointerTestSimple

@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 
-import pdb
-
 class CodeWriter(object):
     """
         I feel this object should simply take a command and return its assm
@@ -18,7 +16,7 @@ class CodeWriter(object):
         self.seg_map = {
             'argument' : 'ARG',
             'local'    : 'LCL',
-            'pointer'  : '',
+            'pointer'  : 'pointer',
             'static'   : '',
             'temp'     : 'TEMP',
             'that'     : 'THAT',
@@ -169,7 +167,23 @@ class CodeWriter(object):
         address = self.command.arg2
         self.assm = [] # TODO: do this in process_command instead of repeating
 
-        if segment != 'TEMP':
+        if segment in {'TEMP', 'pointer'}:
+            if segment == 'TEMP':
+                address = int(address) + 5
+                assert 5 <= address <= 12 # RAM[5-12] are temp addresses
+            elif segment == 'pointer':
+                address = int(address) + 3
+                assert 3 <= address <= 4  # RAM[3-4] are temp addressess
+
+            self.assm.extend(['@SP'])
+            self.assm.extend(['A=M-1'])
+            self.assm.extend(['D=M'])
+            self.assm.extend(['@%s' % address])
+            self.assm.extend(['M=D'])
+            self.assm.extend(['@SP'])
+            self.assm.extend(['M=M-1'])
+
+        elif segment != 'TEMP':
             # this is different for temp. There's no pointer to temp
             self.assm.extend(['@%s' % segment])
             self.assm.extend(['D=M'])
@@ -186,17 +200,6 @@ class CodeWriter(object):
             self.assm.extend(['@SP'])
             self.assm.extend(['M=M-1'])
 
-        elif segment == 'TEMP':
-            address = int(address) + 5
-            assert 5 <= address <= 12 # RAM[5-12] are temp addresses
-            self.assm.extend(['@SP'])
-            self.assm.extend(['A=M-1'])
-            self.assm.extend(['D=M'])
-            self.assm.extend(['@%s' % address])
-            self.assm.extend(['M=D'])
-            self.assm.extend(['@SP'])
-            self.assm.extend(['M=M-1'])
-
     def write_push(self):
         assert self.command.ctype == 'C_PUSH'
 
@@ -204,9 +207,14 @@ class CodeWriter(object):
         segment = self.seg_map[self.command.arg1]
         address = self.command.arg2
 
-        if segment == 'TEMP':
-            address = int(address) + 5
-            assert 5 <= address <= 12 # RAM[5-12] are temp addresses
+        if segment in {'TEMP', 'pointer'}:
+            if segment == 'TEMP':
+                address = int(address) + 5
+                assert 5 <= address <= 12 # RAM[5-12] are temp addresses
+            elif segment == 'pointer':
+                address = int(address) + 3
+                assert 3 <= address <= 4 # RAM[3-4] are pointer addresses
+
             self.assm.extend(['@%s' % (address, )])
             self.assm.extend(['D=M'])
 
