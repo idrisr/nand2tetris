@@ -17,7 +17,7 @@ class CodeWriter(object):
             'argument' : 'ARG',
             'local'    : 'LCL',
             'pointer'  : 'pointer',
-            'static'   : '',
+            'static'   : 'static',
             'temp'     : 'TEMP',
             'that'     : 'THAT',
             'this'     : 'THIS',
@@ -167,13 +167,16 @@ class CodeWriter(object):
         address = self.command.arg2
         self.assm = [] # TODO: do this in process_command instead of repeating
 
-        if segment in {'TEMP', 'pointer'}:
+        if segment in {'TEMP', 'pointer', 'static'}:
             if segment == 'TEMP':
                 address = int(address) + 5
                 assert 5 <= address <= 12 # RAM[5-12] are temp addresses
             elif segment == 'pointer':
                 address = int(address) + 3
                 assert 3 <= address <= 4  # RAM[3-4] are temp addressess
+            elif segment == 'static':
+                address = int(address) + 16
+                assert 16 <= address <= 256  # RAM[16-256] are temp addressess
 
             self.assm.extend(['@SP'])
             self.assm.extend(['A=M-1'])
@@ -207,13 +210,16 @@ class CodeWriter(object):
         segment = self.seg_map[self.command.arg1]
         address = self.command.arg2
 
-        if segment in {'TEMP', 'pointer'}:
+        if segment in {'TEMP', 'pointer', 'static'}:
             if segment == 'TEMP':
                 address = int(address) + 5
                 assert 5 <= address <= 12 # RAM[5-12] are temp addresses
             elif segment == 'pointer':
                 address = int(address) + 3
                 assert 3 <= address <= 4 # RAM[3-4] are pointer addresses
+            elif segment == 'static':
+                address = int(address) + 16
+                assert 16 <= address <= 256 # RAM[16-256] are pointer addresses
 
             self.assm.extend(['@%s' % (address, )])
             self.assm.extend(['D=M'])

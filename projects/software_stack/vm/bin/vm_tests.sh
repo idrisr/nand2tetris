@@ -33,16 +33,16 @@ run_test StackArithmetic SimpleAdd
 echo 'comparing SimpleAdd2 Test'
 run_test StackArithmetic SimpleAdd2
 
-echo 'comparing SimpleAdd EqTest'
+echo 'comparing EqTest Test'
 run_test StackArithmetic EqTest
 
-echo 'comparing SimpleAdd NegTest'
+echo 'comparing NegTest Test'
 run_test StackArithmetic NegTest
 
-echo 'comparing SimpleAdd AndTest'
+echo 'comparing AndTest Test'
 run_test StackArithmetic AndTest
 
-echo 'comparing Stack Arithmetic Test'
+echo 'comparing StackTest Test'
 run_test StackArithmetic StackTest
 
 echo 'comparing Very Basic Memory Test'
@@ -60,5 +60,11 @@ run_test MemoryAccess BasicTestTemp
 echo 'comparing Basic Memory Test'
 run_test MemoryAccess BasicTest
 
-echo 'comparing Simple Pointer Test'
+echo 'comparing Simple Pointer Test Simple'
 run_test MemoryAccess PointerTestSimple
+
+echo 'comparing Simple Pointer Simple'
+run_test MemoryAccess PointerTest
+
+echo 'comparing Static Test'
+run_test MemoryAccess StaticTest

@@ -7,7 +7,6 @@ from os import path, environ
 import sys
 
 class VMParser(Parser):
-    """ holds memory state, like SP poinger """
     def advance(self):
         """
         Reads the next command from the input and makes it the current
